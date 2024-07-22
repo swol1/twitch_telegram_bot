@@ -1,0 +1,47 @@
+---
+en:
+  common_instructions: |-
+    <code>sub streamer_login</code> - subscribe to <i>streamer_login</i> notifications
+    <code>unsub streamer_login</code> - unsubscribe from <i>streamer_login</i> notifications
+    <code>unsub_all</code> - unsubscribe from all notifications
+
+    Replace <i>streamer_login</i> with the actual streamer's login. The login can be found in the URL on Twitch.
+    Example: <code>sub twitch</code>
+
+    /list - list of your subscriptions with the latest streamer’s information
+  errors:
+    generic: An internal error occurred. Please try again later.
+    login_not_provided: You didn't provide a login.
+    max_subs_reached: You don't have any available subscriptions left. To check your current subscriptions - /list
+    not_uniq_subscription: You are already subscribed to <b>%{name}</b>.
+    streamer_not_found: |-
+      Streamer <b>%{login}</b> not found.
+      Perhaps you used the streamer's name instead of their login? The login can be found on the streamer's Twitch page URL.
+    user_not_subscribed: You were not subscribed to <b>%{login}</b>.
+  hello_message: "Hi there, %{name}! 👋\n\n🚀 You can subscribe to streamers and receive notifications, when they go live, switch categories, or change titles. Remember, you can follow up to %{max_subs} streamers simultaneously. Enjoy the experience!\n\n%{instructions}"
+  help_message: |-
+    Here's how you can interact with me:
+
+    %{instructions}
+  streamer_notification:
+    offline: |2-
+
+
+      The streamer might be offline.
+    online: "%{name} is online."
+    update: |-
+      %{name}
+      Category: %{category}
+      Title: %{title}
+  streamer_subscription:
+    info:
+      category: 'Category: %{category}'
+      not_available: "Data is not available yet 😢"
+      not_subscribed: "You are not subscribed to any streamer yet 😢"
+      subscribed_to: "You are subscribed to: %{streamers}\n\n"
+      title: 'Title: %{title}'
+    subscribed_success: |-
+      You have successfully subscribed to notifications from <b>%{name}</b>.
+      Number of available subscriptions: %{left_subs}
+    unsubscribed: You have unsubscribed from <b>%{login}</b>.
+    unsubscribed_all: You have unsubscribed from all notifications.

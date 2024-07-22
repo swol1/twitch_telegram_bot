@@ -1,0 +1,14 @@
+#!/bin/bash -e
+
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ] && [ -f /usr/lib/*/libjemalloc.so.2 ]; then
+  export LD_PRELOAD="$(echo /usr/lib/*/libjemalloc.so.2)"
+fi
+
+export RACK_ENV=production
+export PORT=3000
+
+echo "Preparing database..."
+bundle exec rake db:create db:migrate
+
+exec "${@}"

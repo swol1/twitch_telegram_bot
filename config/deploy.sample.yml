@@ -1,0 +1,87 @@
+service: service_name
+
+image: image_name
+
+servers:
+  web:
+    hosts:
+      - <%= ENV['HOST_IP'] %>
+    options:
+      network: "private"
+    labels:
+      traefik.http.routers.your_host_name.rule: Host(`your_host_name.com`)
+      traefik.http.routers.your_host_name_secure.entrypoints: websecure
+      traefik.http.routers.your_host_name_secure.rule: Host(`your_host_name.com`)
+      traefik.http.routers.your_host_name_secure.tls: true
+      traefik.http.routers.your_host_name_secure.tls.certresolver: letsencrypt
+    cmd: bundle exec puma
+
+  jobs:
+    hosts:
+      - <%= ENV['HOST_IP'] %>
+    options:
+      network: "private"
+    cmd: bundle exec sidekiq -r ./config/environment.rb
+
+volumes:
+  - "/db:/twitch_telegram_bot/storage/db"
+
+registry:
+  server: registry.digitalocean.com/your_name
+  username:
+    - KAMAL_REGISTRY_USER
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 3000
+  secret:
+    - TWITCH_MESSAGE_SECRET
+    - TWITCH_CLIENT_ID
+    - TWITCH_CLIENT_SECRET
+    - TELEGRAM_TOKEN
+    - TELEGRAM_SECRET_TOKEN
+    - PUBLIC_API_URL
+    - REDIS_URL
+
+retain_containers: 3
+
+healthcheck:
+  interval: 10s
+
+accessories:
+  redis:
+    image: redis:latest
+    roles:
+      - web
+      - jobs
+    cmd: "/bin/sh -c 'redis-server --requirepass $REDIS_PASSWORD'"
+    env:
+      secret:
+        - REDIS_PASSWORD
+    volumes:
+      - /var/lib/redis:/data
+    options:
+      network: "private"
+
+traefik:
+  options:
+    cpus: 1
+    publish:
+      - "443:443"
+    volume:
+      - "/letsencrypt/acme.json:/letsencrypt/acme.json"
+    network: "private"
+  args:
+    accesslog: true
+    accesslog.format: json
+    entryPoints.web.address: ":80"
+    entryPoints.websecure.address: ":443"
+    entryPoints.web.http.redirections.entryPoint.to: websecure
+    entryPoints.web.http.redirections.entryPoint.scheme: https
+    entryPoints.web.http.redirections.entrypoint.permanent: true
+    certificatesResolvers.letsencrypt.acme.email: "your_email@mail.com"
+    certificatesResolvers.letsencrypt.acme.storage: "/letsencrypt/acme.json"
+    certificatesResolvers.letsencrypt.acme.httpchallenge: true
+    certificatesResolvers.letsencrypt.acme.httpchallenge.entrypoint: web

@@ -1,0 +1,17 @@
+default: &default
+  adapter: sqlite3
+  pool: <%= ENV.fetch("MAX_THREADS") { 10 } %>
+  retries: 100
+  idle_timeout: 0
+
+development:
+  <<: *default
+  database: storage/db/development.sqlite3
+
+test:
+  <<: *default
+  database: storage/db/test.sqlite3
+
+production:
+  <<: *default
+  database: storage/db/production.sqlite3
