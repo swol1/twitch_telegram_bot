@@ -2,6 +2,7 @@
 
 class LoggerWithFormat < SimpleDelegator
   def log_error(err = nil, msg = nil)
+    Sentry.capture_message "Error caught: #{err&.message}. Msg: #{msg}" if Object.const_defined?('Sentry')
     error(format_error_message(err, msg))
   end
 

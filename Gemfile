@@ -19,6 +19,9 @@ gem 'rackup'
 gem 'rake'
 gem 'sidekiq', '~> 7.2'
 gem 'sqlite3', '~> 1.4', force_ruby_platform: true
+gem 'stackprof'
+gem 'sentry-ruby'
+gem 'sentry-sidekiq'
 gem 'telegram-bot-ruby'
 gem 'zeitwerk'
 

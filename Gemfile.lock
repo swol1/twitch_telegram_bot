@@ -48,12 +48,12 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
-    database_cleaner-active_record (2.1.0)
+    database_cleaner-active_record (2.2.0)
       activerecord (>= 5.a)
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
     diff-lcs (1.5.1)
-    docile (1.4.0)
+    docile (1.4.1)
     dotenv (3.1.2)
     drb (2.2.1)
     dry-core (1.0.1)
@@ -79,13 +79,14 @@ GEM
     erubi (1.13.0)
     factory_bot (6.4.6)
       activesupport (>= 5.0.0)
-    faraday (2.9.2)
+    faraday (2.10.1)
       faraday-net_http (>= 2.0, < 3.2)
+      logger
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
-    faraday-net_http (3.1.0)
+    faraday-net_http (3.1.1)
       net-http
-    grape (2.1.2)
+    grape (2.1.3)
       activesupport (>= 6)
       dry-types (>= 1.1)
       mustermann-grape (~> 1.1.0)
@@ -94,7 +95,7 @@ GEM
     grape_logging (1.8.4)
       grape
       rack
-    hashdiff (1.1.0)
+    hashdiff (1.1.1)
     hashie (5.0.0)
     hashie-forbidden_attributes (0.1.1)
       hashie (>= 3.0)
@@ -135,7 +136,7 @@ GEM
     minitest (5.24.1)
     mock_redis (0.44.0)
     multipart-post (2.4.1)
-    mustermann (3.0.0)
+    mustermann (3.0.1)
       ruby2_keywords (~> 0.0.1)
     mustermann-grape (1.1.0)
       mustermann (>= 1.0.0)
@@ -143,26 +144,26 @@ GEM
     net-http (0.4.1)
       uri
     nio4r (2.7.3)
-    nokogiri (1.16.6)
+    nokogiri (1.16.7)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    nokogiri (1.16.6-aarch64-linux)
+    nokogiri (1.16.7-aarch64-linux)
       racc (~> 1.4)
-    nokogiri (1.16.6-arm-linux)
+    nokogiri (1.16.7-arm-linux)
       racc (~> 1.4)
-    nokogiri (1.16.6-arm64-darwin)
+    nokogiri (1.16.7-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.6-x86-linux)
+    nokogiri (1.16.7-x86-linux)
       racc (~> 1.4)
-    nokogiri (1.16.6-x86_64-darwin)
+    nokogiri (1.16.7-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.6-x86_64-linux)
+    nokogiri (1.16.7-x86_64-linux)
       racc (~> 1.4)
-    otr-activerecord (2.2.0)
-      activerecord (>= 4.0, < 7.2)
+    otr-activerecord (2.3.0)
+      activerecord (>= 6.0, < 7.2)
       hashie-forbidden_attributes (~> 0.1)
     parallel (1.25.1)
-    parser (3.3.3.0)
+    parser (3.3.4.0)
       ast (~> 2.4.1)
       racc
     pry (0.14.2)
@@ -173,11 +174,11 @@ GEM
       pry (>= 0.13, < 0.15)
     psych (5.1.2)
       stringio
-    public_suffix (6.0.0)
+    public_suffix (6.0.1)
     puma (6.4.2)
       nio4r (~> 2.0)
-    racc (1.8.0)
-    rack (3.1.6)
+    racc (1.8.1)
+    rack (3.1.7)
     rack-attack (6.7.0)
       rack (>= 1.0, < 4)
     rack-session (2.0.0)
@@ -216,7 +217,7 @@ GEM
     regexp_parser (2.9.2)
     reline (0.5.9)
       io-console (~> 0.5)
-    rexml (3.3.1)
+    rexml (3.3.4)
       strscan
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
@@ -236,13 +237,13 @@ GEM
       rspec-mocks (~> 3.0)
       sidekiq (>= 5, < 8)
     rspec-support (3.13.1)
-    rubocop (1.64.1)
+    rubocop (1.65.1)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
       parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
-      regexp_parser (>= 1.8, < 3.0)
+      regexp_parser (>= 2.4, < 3.0)
       rexml (>= 3.2.5, < 4.0)
       rubocop-ast (>= 1.31.1, < 2.0)
       ruby-progressbar (~> 1.7)
@@ -253,10 +254,16 @@ GEM
       rubocop (~> 1.61)
     rubocop-rake (0.6.0)
       rubocop (~> 1.0)
-    rubocop-rspec (3.0.2)
+    rubocop-rspec (3.0.3)
       rubocop (~> 1.61)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
+    sentry-ruby (5.18.2)
+      bigdecimal
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+    sentry-sidekiq (5.18.2)
+      sentry-ruby (~> 5.18.2)
+      sidekiq (>= 3.0)
     shoulda-matchers (6.2.0)
       activesupport (>= 5.2.0)
     sidekiq (7.3.0)
@@ -273,6 +280,7 @@ GEM
     simplecov_json_formatter (0.1.4)
     sqlite3 (1.7.3)
       mini_portile2 (~> 2.8.0)
+    stackprof (0.2.26)
     stringio (3.1.1)
     strscan (3.1.0)
     telegram-bot-ruby (2.0.0)
@@ -293,7 +301,7 @@ GEM
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.8.1)
-    zeitwerk (2.6.16)
+    zeitwerk (2.6.17)
 
 PLATFORMS
   aarch64-linux
@@ -333,10 +341,13 @@ DEPENDENCIES
   rubocop-factory_bot
   rubocop-rake
   rubocop-rspec
+  sentry-ruby
+  sentry-sidekiq
   shoulda-matchers
   sidekiq (~> 7.2)
   simplecov
   sqlite3 (~> 1.4)
+  stackprof
   telegram-bot-ruby
   webmock
   zeitwerk
