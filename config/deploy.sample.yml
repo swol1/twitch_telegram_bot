@@ -44,6 +44,7 @@ env:
     - TELEGRAM_SECRET_TOKEN
     - PUBLIC_API_URL
     - REDIS_URL
+    - SENTRY_DSN
 
 retain_containers: 3
 
