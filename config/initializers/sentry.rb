@@ -20,7 +20,7 @@ if App.secrets.sentry_dsn.present?
         when /up/
           0.0
         else
-          0.3
+          0.1
         end
       when /sidekiq/
         0.1
