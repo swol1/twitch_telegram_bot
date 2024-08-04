@@ -4,15 +4,16 @@ require 'spec_helper'
 
 RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   describe 'POST /twitch/eventsub' do
-    let(:subscription) do
-      create(
-        :event_subscription,
-        streamer_twitch_id: '123456',
-        event_type: 'channel.update',
-        version: '2',
-        status: :inactive
+    let(:params) do
+      base_params.deep_merge(
+        subscription: { type: 'channel.update' },
+        event: {
+          category_name: 'some_category',
+          title: 'some_title'
+        }
       )
     end
+    let(:subscription) { streamer.event_subscriptions.find_by(event_type: 'channel.update') }
 
     subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
@@ -29,7 +30,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
             version: '2',
             cost: 1,
             condition: {
-              broadcaster_user_id: subscription.streamer_twitch_id
+              broadcaster_user_id: streamer.twitch_id
             },
             transport: {
               method: 'webhook',

@@ -44,7 +44,8 @@ class TwitchWebhook < Grape::API
         name: event['broadcaster_user_name'],
         login: event['broadcaster_user_login'],
         category: event['category_name'],
-        title: event['title']
+        title: event['title'],
+        created_at: params['subscription']['created_at']
       }.stringify_keys
     end
   end
@@ -60,6 +61,7 @@ class TwitchWebhook < Grape::API
       requires :condition, type: Hash do
         requires :broadcaster_user_id, type: String
       end
+      requires :created_at
     end
     optional :event, type: Hash do
       optional :broadcaster_user_id, type: String

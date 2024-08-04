@@ -13,7 +13,7 @@ module TwitchEvents
 
     private
 
-    def streamer = @_streamer ||= Streamer.find_by!(twitch_id: @event.twitch_id)
+    def streamer = @event.streamer
     def channel_info = @_channel_info ||= streamer.channel_info
 
     def notify_subscribers(text:)

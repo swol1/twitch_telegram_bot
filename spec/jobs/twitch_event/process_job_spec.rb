@@ -11,10 +11,11 @@ RSpec.describe TwitchEvent::ProcessJob, type: :job do
       name: 'Streamer Name',
       login: 'streamer_login',
       category: 'some_category',
-      title: 'some_title'
+      title: 'some_title',
+      created_at: Time.current.iso8601
     }
   end
-
+  let!(:streamer) { create(:streamer, twitch_id: 'twitch_1') }
   let(:service) { instance_double('TwitchEvents::StreamOnline') }
 
   before do
@@ -46,6 +47,17 @@ RSpec.describe TwitchEvent::ProcessJob, type: :job do
     context 'when the event is duplicated' do
       it 'does not process the event' do
         TwitchEvent.new(params).received.mark
+
+        expect(TwitchEvents::StreamOnline).not_to receive(:new)
+        expect(service).not_to receive(:process)
+
+        described_class.new.perform(params)
+      end
+    end
+
+    context 'when incorrect event order' do
+      it 'does not process the even' do
+        streamer.channel_info[:created_at] = (Time.current + 1.second).iso8601
 
         expect(TwitchEvents::StreamOnline).not_to receive(:new)
         expect(service).not_to receive(:process)

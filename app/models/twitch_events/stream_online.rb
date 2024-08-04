@@ -3,16 +3,24 @@
 module TwitchEvents
   class StreamOnline < Base
     def process
-      return if status_unchanged?
-
-      update_streamer_info
-      notify_subscribers(text: text_with_locales)
+      if stream_restarted?
+        update_channel_info
+      else
+        update_channel_info
+        notify_subscribers(text: text_with_locales)
+      end
     end
 
     private
 
-    def update_streamer_info = channel_info[:status] = 'online'
-    def status_unchanged? = channel_info[:status] == 'online'
+    def stream_restarted?
+      @event.seconds_since_last_event < 60
+    end
+
+    def update_channel_info
+      channel_info[:status] = 'online'
+      channel_info[:created_at] = @event.created_at
+    end
 
     def text_with_locales
       name = streamer.info.name_with_emoji

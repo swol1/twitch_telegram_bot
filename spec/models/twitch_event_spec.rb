@@ -21,7 +21,8 @@ RSpec.describe TwitchEvent, type: :model do
         id: '1', type: 'some_type',
         twitch_id: 't123',
         name: 'test',
-        login: 'test_login'
+        login: 'test_login',
+        created_at: Time.current.iso8601
       )
       expect(twitch_event.not_duplicated?).to eq(true)
       expect(twitch_event.not_duplicated?).to eq(false)
