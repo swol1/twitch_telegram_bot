@@ -3,23 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
-  let(:streamer) { create(:streamer, :with_active_subscriptions, name: 'Streamer Name', twitch_id: '123456') }
-  let(:params) do
-    {
-      subscription: {
-        id: 'test_subscription_id',
-        type: 'stream.online',
-        condition: {
-          broadcaster_user_id: '123456'
-        }
-      },
-      event: {
-        broadcaster_user_id: '123456',
-        broadcaster_user_login: 'streamer_login',
-        broadcaster_user_name: 'Streamer Name'
-      }
-    }
-  end
+  let(:params) { base_params }
 
   subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
 
@@ -29,7 +13,10 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
   describe 'POST channel.online event' do
     context 'when status changed' do
-      before { streamer.channel_info[:status] = 'offline' }
+      before do
+        streamer.channel_info[:status_received_at] = (Time.current - 61.seconds).iso8601
+        streamer.channel_info[:status] = 'offline'
+      end
 
       it 'updates streamer data' do
         expect { send_webhook_request }
@@ -59,14 +46,18 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       end
     end
 
-    context 'when status the same' do
-      before { streamer.channel_info[:status] = 'online' }
-
-      it 'doesn\'t update streamer data' do
-        expect { send_webhook_request }.not_to(change { streamer.channel_info[:status] })
+    context 'when stream restarted' do
+      before do
+        streamer.channel_info[:status_received_at] = (Time.current - 50.seconds).iso8601
+        streamer.channel_info[:status] = 'offline'
       end
 
-      it 'doesn\'t notify users' do
+      it 'updates streamer data' do
+        expect { send_webhook_request }
+          .to change { streamer.channel_info[:status] }.from('offline').to('online')
+      end
+
+      it 'doesn\'t send message to users' do
         send_webhook_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)

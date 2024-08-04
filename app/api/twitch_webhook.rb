@@ -44,7 +44,8 @@ class TwitchWebhook < Grape::API
         name: event['broadcaster_user_name'],
         login: event['broadcaster_user_login'],
         category: event['category_name'],
-        title: event['title']
+        title: event['title'],
+        received_at: Time.current.iso8601
       }.stringify_keys
     end
   end

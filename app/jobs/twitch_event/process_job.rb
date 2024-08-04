@@ -6,9 +6,20 @@ class TwitchEvent::ProcessJob
 
   def perform(params)
     event = TwitchEvent.new(params)
+    if event.valid? && event.not_duplicated?
+      process_event(event)
+    else
+      App.logger.log_error(
+        nil,
+        "Event was not processed: #{event.inspect}. " \
+        "valid: #{event.valid?}, not_duplicated: #{event.not_duplicated?}"
+      )
+    end
+  end
 
-    return unless event.valid? && event.not_duplicated?
+  private
 
+  def process_event(event)
     "TwitchEvents::#{event.type.tr('.', '_').classify}".constantize.new(event).process
   end
 end
