@@ -5,12 +5,11 @@ module SentryTracing
     base.before do
       url = request.path
       method = request.request_method
-      message_text = url == '/telegram/webhook' ? params.dig(:message, :text).downcase.split[0] : ''
-
-      transaction = Sentry.start_transaction(
-        op: 'http.server',
-        name: "#{method} #{url} #{message_text}"
-      )
+      name = "#{method} #{url}"
+      if url == '/telegram/webhook' && (message_text = params.dig(:message, :text))
+        name += " #{message_text.downcase.split.first}"
+      end
+      transaction = Sentry.start_transaction(op: 'http.server', name:)
 
       env['sentry.transaction'] = transaction
     end

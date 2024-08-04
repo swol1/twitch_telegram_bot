@@ -8,8 +8,7 @@ coverage
 # Ignore all environment files (except templates).
 /.env*
 !/.env.template
-!/.env.development.template
-!/.env.test
+!/.env.local.template
 
 # Ignore all logfiles and tempfiles.
 /log/*

@@ -4,7 +4,7 @@ Telegram bot that sends real-time notifications from Twitch with changes on stre
 
 - **Bot URL**: [t.me/twitchoba_bot](https://t.me/twitchoba_bot)
 
-## If you want for some reason to run it locally or deploy to your own server
+## If you want to have no limits and have faster delivery you can run it locally or deploy to your own server
 
 ### 1. Clone the Repository
 
@@ -18,7 +18,7 @@ cd twitch_telegram_bot
 - I want to run locally:
 
 ```bash
-cp .env.development.template .env.development
+cp .env.local.template .env.local
 ```
 
 - I want to deploy:
@@ -26,7 +26,7 @@ cp .env.development.template .env.development
 ```bash
 cp .env.template .env
 ```
-Then fill in environment variables inside the .env.development or .env file.
+Then fill in environment variables inside the .env.local or .env file.
 
 ### 3. Generate Your Own Secrets
 
