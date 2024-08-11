@@ -3,30 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
-  let(:streamer) do
-    create(:streamer,
-           :with_active_subscriptions,
-           login: 'streamer_login',
-           name: 'Streamer Name',
-           twitch_id: '123456')
-  end
   let(:params) do
-    {
-      subscription: {
-        id: 'test_subscription_id',
-        type: 'channel.update',
-        condition: {
-          broadcaster_user_id: '123456'
-        }
-      },
+    base_params.deep_merge(
+      subscription: { type: 'channel.update' },
       event: {
-        broadcaster_user_id: '123456',
-        broadcaster_user_login: 'streamer_login',
-        broadcaster_user_name: 'Streamer Name',
         category_name: 'some_category',
         title: 'some_title t.me/my_tg_login'
       }
-    }
+    )
   end
 
   subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
@@ -43,7 +27,9 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         expect { send_webhook_request }
           .to change { streamer.reload.telegram_login }.from(nil).to('my_tg_login')
           .and change { streamer.channel_info[:title] }.from('title').to('some_title t.me/my_tg_login')
-          .and change { streamer.channel_info[:category] }.from('category').to('some_category')
+                                                       .and change {
+                                                              streamer.channel_info[:category]
+                                                            }.from('category').to('some_category')
       end
 
       it 'notifies subscribers' do
@@ -97,7 +83,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
     context 'when telegram login already set' do
       it "doesn't update telegram login" do
         streamer.update(telegram_login: 'other_login')
-        expect { send_webhook_request }.to(not_change { streamer.reload.telegram_login })
+        expect { send_webhook_request }.not_to(change { streamer.reload.telegram_login })
       end
     end
   end
