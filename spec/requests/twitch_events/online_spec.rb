@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   let(:params) { base_params }
+  let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'stream.online') }
 
   subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
 
@@ -14,7 +15,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   describe 'POST channel.online event' do
     context 'when status changed' do
       before do
-        streamer.channel_info[:status_received_at] = (Time.current - 61.seconds).iso8601
+        streamer.channel_info[:status_received_at] = (Time.current - 31.seconds).iso8601
         streamer.channel_info[:status] = 'offline'
       end
 
@@ -26,7 +27,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       it 'notifies subscribers' do
         users = create_list(:user, 3, subscriptions: [streamer])
 
-        expected_text = '<b>Streamer Name</b> 😀 is online.'
+        expected_text = '<b>Streamer Name</b> 😀 is online'
         expect(telegram_bot_client).to receive_send_message_with(
           {
             text: expected_text,
@@ -48,7 +49,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
     context 'when stream restarted' do
       before do
-        streamer.channel_info[:status_received_at] = (Time.current - 50.seconds).iso8601
+        streamer.channel_info[:status_received_at] = (Time.current - 20.seconds).iso8601
         streamer.channel_info[:status] = 'offline'
       end
 

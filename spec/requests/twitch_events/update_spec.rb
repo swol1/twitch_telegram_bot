@@ -5,13 +5,13 @@ require 'spec_helper'
 RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   let(:params) do
     base_params.deep_merge(
-      subscription: { type: 'channel.update' },
       event: {
         category_name: 'some_category',
         title: 'some_title t.me/my_tg_login'
       }
     )
   end
+  let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'channel.update') }
 
   subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
 

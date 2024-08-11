@@ -10,7 +10,7 @@ class Streamer::Info
   def name_with_emoji = "<b>#{@streamer.name}</b>".append_emoji
 
   def to_text(*args)
-    args = %i[name category title twitch telegram] if args.empty?
+    args = %i[name category title twitch telegram] if args.blank?
     formatted_attributes.values_at(*args).compact_blank.join("\n")
   end
 

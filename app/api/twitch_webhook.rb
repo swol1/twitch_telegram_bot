@@ -15,7 +15,7 @@ class TwitchWebhook < Grape::API
     error!(message: 'Internal server error', status: 500)
   end
 
-  helpers do # rubocop:disable Metrics/BlockLength
+  helpers do
     def verify_twitch_signature
       secret = App.secrets.twitch_message_secret
       message = [
@@ -29,10 +29,7 @@ class TwitchWebhook < Grape::API
     end
 
     def event_subscription
-      EventSubscription.find_by(
-        streamer_twitch_id: params['subscription']['condition']['broadcaster_user_id'],
-        event_type: params['subscription']['type']
-      )
+      @_event_subscription ||= EventSubscription.find_by!(twitch_id: params['subscription']['id'])
     end
 
     def event_params
@@ -40,9 +37,7 @@ class TwitchWebhook < Grape::API
       {
         id: headers[TWITCH_MESSAGE_ID],
         type: params['subscription']['type'],
-        twitch_id: event['broadcaster_user_id'],
-        name: event['broadcaster_user_name'],
-        login: event['broadcaster_user_login'],
+        twitch_id: params['subscription']['id'],
         category: event['category_name'],
         title: event['title'],
         received_at: Time.current.iso8601
@@ -58,6 +53,7 @@ class TwitchWebhook < Grape::API
     requires :subscription, type: Hash do
       requires :id, type: String
       requires :type, type: String
+      requires :version, type: String
       requires :condition, type: Hash do
         requires :broadcaster_user_id, type: String
       end
@@ -74,7 +70,7 @@ class TwitchWebhook < Grape::API
   post '/eventsub' do
     case request.headers[TWITCH_MESSAGE_TYPE]
     when MESSAGE_TYPE_VERIFICATION
-      event_subscription.active!
+      event_subscription.enabled!
       content_type 'text/plain'
       status 200
       body params['challenge']
@@ -82,7 +78,10 @@ class TwitchWebhook < Grape::API
       TwitchEvent::ProcessJob.perform_async(event_params)
       return_no_content
     when MESSAGE_TYPE_REVOCATION
-      event_subscription.inactive!
+      event_subscription.revoked!
+      streamer = event_subscription.streamer
+      streamer.destroy if streamer.event_subscriptions.all?(&:revoked?)
+
       App.logger.log_error(nil, "Event Revoked: #{event_subscription.inspect}")
       return_no_content
     else

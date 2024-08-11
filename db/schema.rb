@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_05_000904) do
+ActiveRecord::Schema[7.1].define(version: 2024_08_06_225352) do
   create_table "event_subscriptions", force: :cascade do |t|
     t.string "event_type", null: false
     t.string "streamer_twitch_id", null: false
@@ -18,7 +18,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_05_000904) do
     t.integer "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "twitch_id"
     t.index ["streamer_twitch_id", "event_type"], name: "index_event_subscriptions_on_streamer_twitch_id_and_event_type", unique: true
+    t.index ["twitch_id"], name: "index_event_subscriptions_on_twitch_id", unique: true
   end
 
   create_table "streamers", force: :cascade do |t|

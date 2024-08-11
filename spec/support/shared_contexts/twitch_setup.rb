@@ -1,7 +1,16 @@
 # frozen_string_literal: true
 
 RSpec.shared_context 'with default twitch setup' do
-  let(:streamer) { create(:streamer, login: 'streamer_login', name: 'Streamer Name', twitch_id: '123456') }
+  let(:streamer) do
+    create(
+      :streamer,
+      :with_enabled_subscriptions,
+      login: 'streamer_login',
+      name: 'Streamer Name',
+      twitch_id: '123456'
+    )
+  end
+  let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'stream.online') }
   let(:message_type) { 'notification' }
   let(:headers) do
     {
@@ -15,15 +24,12 @@ RSpec.shared_context 'with default twitch setup' do
   let(:base_params) do
     {
       subscription: {
-        id: 'test_subscription_id',
-        type: 'stream.online',
-        condition: { broadcaster_user_id: '123456' }
+        id: event_subscription.twitch_id,
+        type: event_subscription.event_type,
+        version: event_subscription.version,
+        condition: { broadcaster_user_id: streamer.twitch_id }
       },
-      event: {
-        broadcaster_user_id: '123456',
-        broadcaster_user_login: 'streamer_login',
-        broadcaster_user_name: 'Streamer Name'
-      }
+      event: {}
     }
   end
 

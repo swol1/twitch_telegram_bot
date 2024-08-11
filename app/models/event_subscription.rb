@@ -10,9 +10,22 @@ class EventSubscription < ActiveRecord::Base
 
   belongs_to :streamer, primary_key: 'twitch_id', foreign_key: 'streamer_twitch_id'
 
-  enum :status, %i[inactive active], default: :inactive
+  enum :status, %i[pending enabled revoked], default: :pending
 
   validates :event_type, presence: true, inclusion: { in: TYPES.keys }
   validates :event_type, uniqueness: { scope: :streamer_twitch_id, message: 'should be unique per streamer' }
   validates :streamer_twitch_id, presence: true
+
+  before_destroy :unsubscribe_from_twitch
+
+  private
+
+  def unsubscribe_from_twitch
+    return if revoked?
+
+    response = TwitchApiClient.new.delete_subscription_to_event(twitch_id)
+    return if %w[204 404].include?(response[:status])
+
+    App.logger.log_error(nil, "Subscription was not deleted: #{inspect}. Response: #{response.inspect}")
+  end
 end

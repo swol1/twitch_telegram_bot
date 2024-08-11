@@ -8,14 +8,13 @@ RSpec.describe TwitchEvent::ProcessJob, type: :job do
       id: '123',
       type: 'stream.online',
       twitch_id: 'twitch_1',
-      name: 'Streamer Name',
-      login: 'streamer_login',
-      category: 'some_category',
-      title: 'some_title',
       received_at: Time.current.iso8601
     }
   end
-  let!(:streamer) { create(:streamer, twitch_id: 'twitch_1') }
+  let(:streamer) { create(:streamer) }
+  let!(:event_subscription) do
+    create(:event_subscription, event_type: 'stream.online', twitch_id: 'twitch_1', streamer:)
+  end
   let(:service) { instance_double('TwitchEvents::StreamOnline') }
 
   before do

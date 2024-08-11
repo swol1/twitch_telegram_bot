@@ -36,6 +36,16 @@ class TwitchApiClient
     get_request(uri)
   end
 
+  def get_all_app_subscriptions # rubocop:disable Naming/AccessorMethodName
+    uri = URI("#{BASE_TWITCH_API_URL}/eventsub/subscriptions")
+    get_request(uri)
+  end
+
+  def delete_subscription_to_event(subscription_twitch_id)
+    uri = URI("#{BASE_TWITCH_API_URL}/eventsub/subscriptions?id=#{subscription_twitch_id}")
+    delete_request(uri)
+  end
+
   private
 
   def access_token
@@ -71,11 +81,21 @@ class TwitchApiClient
     execute_request(uri, request)
   end
 
+  def delete_request(uri)
+    request = Net::HTTP::Delete.new(uri)
+    request['Authorization'] = "Bearer #{access_token}"
+    request['Client-Id'] = @client_id
+
+    execute_request(uri, request)
+  end
+
   def execute_request(uri, request)
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       response = http.request(request)
-      App.logger.log_error(nil, "Request failed: #{response.body}") unless %w[200 202].include?(response.code)
-      { status: response.code, body: JSON.parse(response.body).deep_symbolize_keys }
+      App.logger.log_error(nil, "Request failed: #{response.body}") unless response.is_a?(Net::HTTPSuccess)
+      formatted_response = { status: response.code }
+      formatted_response[:body] = JSON.parse(response.body, symbolize_names: true) if response.body.present?
+      formatted_response
     end
   end
 end
