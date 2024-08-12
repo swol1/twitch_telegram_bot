@@ -5,10 +5,9 @@ class TwitchEvent
 
   kredis_flag :received, key: ->(f) { "event_id:#{f.id}:received" }
 
-  attr_accessor :id, :type, :twitch_id, :name, :login, :category, :title, :received_at
+  attr_accessor :id, :type, :twitch_id, :category, :title, :received_at
 
-  validates :id, :type, :twitch_id, :name, :login, :received_at, presence: true
-  validates :type, inclusion: { in: ::EventSubscription::TYPES.keys }
+  validates :id, :type, :twitch_id, :received_at, presence: true
   validate :correct_status_event_order, if: -> { ['stream.online', 'stream.offline'].include?(type) }
 
   def not_duplicated?
@@ -24,7 +23,7 @@ class TwitchEvent
   end
 
   def streamer
-    @_streamer ||= Streamer.find_by!(twitch_id:)
+    @_streamer ||= EventSubscription.find_by!(twitch_id:).streamer
   end
 
   private

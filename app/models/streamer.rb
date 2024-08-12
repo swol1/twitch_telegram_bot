@@ -21,7 +21,7 @@ class Streamer < ActiveRecord::Base
     def create_from_twitch!(login)
       Streamer::Twitch::Data.new(login).create_streamer!.tap do |streamer|
         streamer.update_channel_info_from_twitch
-        streamer.activate_events_on_twitch
+        streamer.subscribe_to_twitch_events
       end
     end
   end

@@ -6,14 +6,14 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   describe 'POST /twitch/eventsub' do
     let(:params) do
       base_params.deep_merge(
-        subscription: { type: 'channel.update' },
         event: {
           category_name: 'some_category',
           title: 'some_title'
         }
       )
     end
-    let(:subscription) { streamer.event_subscriptions.find_by(event_type: 'channel.update') }
+    let(:streamer) { create(:streamer, :with_pending_subscriptions) }
+    let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'channel.update') }
 
     subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
@@ -24,24 +24,17 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         params = {
           challenge: 'pogchamp-kappa-360noscope-vohiyo',
           subscription: {
-            id: 'f1c2a387-161a-49f9-a165-0f21d7a4e1c4',
-            status: 'webhook_callback_verification_pending',
+            id: event_subscription.twitch_id,
             type: 'channel.update',
             version: '2',
-            cost: 1,
             condition: {
               broadcaster_user_id: streamer.twitch_id
-            },
-            transport: {
-              method: 'webhook',
-              callback: 'https://example.com/webhooks/callback'
-            },
-            created_at: '2019-11-16T10:11:12.634234626Z'
+            }
           }
         }
 
         expect { post '/twitch/eventsub', params.to_json, headers }
-          .to change { subscription.reload.status }.from('inactive').to('active')
+          .to change { event_subscription.reload.status }.from('pending').to('enabled')
 
         expect(last_response.status).to eq(200)
         expect(last_response.body).to eq(params[:challenge])
@@ -51,10 +44,20 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
     context 'when revocation' do
       let(:message_type) { 'revocation' }
 
-      it 'sets the subscription to inactive' do
-        subscription.active!
+      it 'sets the event subscription to revoked' do
+        event_subscription.enabled!
 
-        expect { send_request }.to change { subscription.reload.status }.from('active').to('inactive')
+        expect { send_request }.to change { event_subscription.reload.status }.from('enabled').to('revoked')
+        expect(last_response.status).to eq(204)
+      end
+
+      it 'destroy streamer if all subscriptions revoked' do
+        streamer.event_subscriptions.each(&:revoked!)
+        event_subscription.enabled!
+
+        expect(twitch_api_client).not_to receive(:delete_subscription_to_event)
+        expect { send_request }.to change { Streamer.count }.by(-1)
+                                                            .and change { EventSubscription.count }.by(-3)
         expect(last_response.status).to eq(204)
       end
     end
@@ -69,16 +72,6 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
         expect(last_response.status).to eq(403)
         expect(last_response.body).to include('Invalid signature')
-      end
-    end
-
-    context 'when the message type is invalid' do
-      let(:message_type) { 'some_type' }
-
-      it 'returns a 204 status' do
-        send_request
-
-        expect(last_response.status).to eq(204)
       end
     end
 

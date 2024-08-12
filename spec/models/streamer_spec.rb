@@ -53,11 +53,11 @@ RSpec.describe Streamer, type: :model do
     end
   end
 
-  describe 'EventSubscriptions module' do
-    describe '#inactive_events' do
-      it 'returns inactive event subscriptions' do
-        expect(streamer.inactive_events.count).to eq(3)
-      end
+  describe 'EventSubscription module' do
+    let(:twitch_api_client) { instance_double(TwitchApiClient) }
+
+    it 'destroys dependent event subscriptions' do
+      expect { streamer.destroy }.to enqueue_sidekiq_job(Streamer::UnsubscribingFromTwitchEventsJob).with(streamer.id)
     end
   end
 end

@@ -10,9 +10,9 @@ class EventSubscription < ActiveRecord::Base
 
   belongs_to :streamer, primary_key: 'twitch_id', foreign_key: 'streamer_twitch_id'
 
-  enum :status, %i[inactive active], default: :inactive
+  enum :status, %i[pending enabled revoked], default: :pending
 
   validates :event_type, presence: true, inclusion: { in: TYPES.keys }
   validates :event_type, uniqueness: { scope: :streamer_twitch_id, message: 'should be unique per streamer' }
-  validates :streamer_twitch_id, presence: true
+  validates :streamer_twitch_id, :twitch_id, presence: true
 end

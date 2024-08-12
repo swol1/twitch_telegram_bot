@@ -16,11 +16,11 @@ RSpec.describe EventSubscription, type: :model do
   end
 
   describe 'enums' do
-    it { is_expected.to define_enum_for(:status).with_values(%i[inactive active]) }
+    it { is_expected.to define_enum_for(:status).with_values(%i[pending enabled revoked]) }
 
-    it 'has inactive as the default value for status' do
+    it 'has pending as the default value for status' do
       event_subscription = EventSubscription.new
-      expect(event_subscription.status).to eq('inactive')
+      expect(event_subscription.status).to eq('pending')
     end
   end
 end

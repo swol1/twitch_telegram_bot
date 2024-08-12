@@ -9,8 +9,8 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
       expect { send_webhook_request }.not_to(change { Streamer.count })
 
-      expect(Streamer::ActivatingEventsOnTwitchJob).not_to have_enqueued_sidekiq_job
-      expect(Streamer::CheckingEventsActivationJob).not_to have_enqueued_sidekiq_job
+      expect(Streamer::SubscribingToTwitchEventsJob).not_to have_enqueued_sidekiq_job
+      expect(Streamer::CheckingEnabledEventsJob).not_to have_enqueued_sidekiq_job
       expect(twitch_api_client).not_to have_received(:get_channel_info)
     end
   end
@@ -60,14 +60,13 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
         streamer = Streamer.last
         expect(user.subscriptions.last).to eq(streamer)
-        expect(streamer.event_subscriptions.inactive.count).to eq(3)
       end
 
       it 'enqueues jobs' do
         freeze_time do
           expect { send_webhook_request }
-            .to enqueue_sidekiq_job(Streamer::ActivatingEventsOnTwitchJob).with(1)
-            .and enqueue_sidekiq_job(Streamer::CheckingEventsActivationJob).with(1).in(10.minutes)
+            .to enqueue_sidekiq_job(Streamer::SubscribingToTwitchEventsJob).with(1)
+            .and enqueue_sidekiq_job(Streamer::CheckingEnabledEventsJob).with(1).in(10.minutes)
         end
       end
 

@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
-  let(:params) { base_params.deep_merge(subscription: { type: 'stream.offline' }) }
+  let(:params) { base_params }
+  let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'stream.offline') }
 
   subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
 

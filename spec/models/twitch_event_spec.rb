@@ -8,20 +8,15 @@ RSpec.describe TwitchEvent, type: :model do
   subject { twitch_event }
 
   before do
-    create(:streamer, twitch_id: twitch_event.twitch_id)
+    streamer = create(:streamer)
+    create(:event_subscription, streamer:, twitch_id: twitch_event.twitch_id)
   end
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:id) }
     it { is_expected.to validate_presence_of(:type) }
     it { is_expected.to validate_presence_of(:twitch_id) }
-    it { is_expected.to validate_presence_of(:name) }
-    it { is_expected.to validate_presence_of(:login) }
     it { is_expected.to validate_presence_of(:received_at) }
-
-    it do
-      is_expected.to validate_inclusion_of(:type).in_array(EventSubscription::TYPES.keys)
-    end
   end
 
   describe '#not_duplicated?' do
@@ -47,6 +42,17 @@ RSpec.describe TwitchEvent, type: :model do
         expect(twitch_event).not_to be_valid
         expect(twitch_event.errors[:base]).to include('Incorrect status order')
       end
+    end
+  end
+
+  describe '#streamer' do
+    it 'raises an error when event subscription not found' do
+      twitch_event = build(:twitch_event)
+      expect { twitch_event.streamer }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'returns streamer when event subscription found' do
+      expect(twitch_event.streamer).to eq(Streamer.last)
     end
   end
 end

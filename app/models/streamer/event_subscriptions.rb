@@ -6,26 +6,23 @@ module Streamer::EventSubscriptions
   included do
     has_many :event_subscriptions, primary_key: 'twitch_id', foreign_key: 'streamer_twitch_id', dependent: :destroy
 
-    after_create :create_inactive_events
+    before_destroy :unsubscribe_from_twitch_events
   end
 
-  def inactive_events
-    event_subscriptions.inactive
+  def pending_events
+    event_subscriptions.pending
   end
 
-  def activate_events_on_twitch
-    Streamer::ActivatingEventsOnTwitchJob.perform_async(id)
-    Streamer::CheckingEventsActivationJob.perform_in(10.minutes, id)
+  def enabled_events
+    event_subscriptions.enabled
   end
 
-  def create_inactive_events
-    EventSubscription::TYPES.each do |type, version|
-      event_subscriptions.create!(
-        event_type: type,
-        version:,
-        streamer_twitch_id: twitch_id,
-        status: :inactive
-      )
-    end
+  def subscribe_to_twitch_events
+    Streamer::SubscribingToTwitchEventsJob.perform_async(id)
+    Streamer::CheckingEnabledEventsJob.perform_in(10.minutes, id)
+  end
+
+  def unsubscribe_from_twitch_events
+    Streamer::UnsubscribingFromTwitchEventsJob.perform_async(id)
   end
 end

@@ -27,8 +27,8 @@ en:
     offline: |2-
 
 
-      The streamer might be offline.
-    online: "%{name} is online."
+      The streamer might be offline
+    online: "%{name} is online"
     update: |-
       %{name}
       Category: %{category}
