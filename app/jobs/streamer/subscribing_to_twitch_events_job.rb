@@ -12,13 +12,7 @@ class Streamer::SubscribingToTwitchEventsJob
     not_enabled_event_types = EventSubscription::TYPES.except(*enabled_event_types)
     return if not_enabled_event_types.blank?
 
-    subscribe_to_events(streamer, not_enabled_event_types)
-  end
-
-  private
-
-  def subscribe_to_events(streamer, event_types)
-    event_types.each do |type, version|
+    not_enabled_event_types.each do |type, version|
       response = twitch_api_client.subscribe_to_event(streamer.twitch_id, type, version)
 
       if already_subscribed?(response)
@@ -30,6 +24,8 @@ class Streamer::SubscribingToTwitchEventsJob
       end
     end
   end
+
+  private
 
   def twitch_api_client = @_twitch_api_client ||= TwitchApiClient.new
 

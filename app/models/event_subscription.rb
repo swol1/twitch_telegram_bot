@@ -14,18 +14,5 @@ class EventSubscription < ActiveRecord::Base
 
   validates :event_type, presence: true, inclusion: { in: TYPES.keys }
   validates :event_type, uniqueness: { scope: :streamer_twitch_id, message: 'should be unique per streamer' }
-  validates :streamer_twitch_id, presence: true
-
-  before_destroy :unsubscribe_from_twitch
-
-  private
-
-  def unsubscribe_from_twitch
-    return if revoked?
-
-    response = TwitchApiClient.new.delete_subscription_to_event(twitch_id)
-    return if %w[204 404].include?(response[:status])
-
-    App.logger.log_error(nil, "Subscription was not deleted: #{inspect}. Response: #{response.inspect}")
-  end
+  validates :streamer_twitch_id, :twitch_id, presence: true
 end

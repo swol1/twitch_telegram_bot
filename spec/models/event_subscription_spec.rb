@@ -23,39 +23,4 @@ RSpec.describe EventSubscription, type: :model do
       expect(event_subscription.status).to eq('pending')
     end
   end
-
-  describe 'unsubscribe from Twitch before destroy' do
-    let(:twitch_api_client) { instance_double(TwitchApiClient) }
-    let(:event_subscription) { create(:event_subscription, status: :enabled) }
-
-    before do
-      allow(TwitchApiClient).to receive(:new).and_return(twitch_api_client)
-    end
-
-    context 'when the subscription is not revoked' do
-      it 'calls the Twitch API to unsubscribe' do
-        expect(twitch_api_client).to receive(:delete_subscription_to_event)
-          .with(event_subscription.twitch_id)
-          .and_return({ status: '204' })
-
-        event_subscription.destroy
-      end
-
-      it 'logs an error if the API response is not 204 or 404' do
-        allow(twitch_api_client).to receive(:delete_subscription_to_event).and_return({ status: '500' })
-        expect(App.logger).to receive(:log_error).with(nil, /Subscription was not deleted/)
-
-        event_subscription.destroy
-      end
-    end
-
-    context 'when the subscription is revoked' do
-      it 'does not call the Twitch API' do
-        event_subscription.update(status: :revoked)
-        expect(twitch_api_client).not_to receive(:delete_subscription_to_event)
-
-        event_subscription.destroy
-      end
-    end
-  end
 end

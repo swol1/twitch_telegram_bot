@@ -54,18 +54,10 @@ RSpec.describe Streamer, type: :model do
   end
 
   describe 'EventSubscription module' do
-    let(:streamer) { create(:streamer, :with_enabled_subscriptions) }
     let(:twitch_api_client) { instance_double(TwitchApiClient) }
 
     it 'destroys dependent event subscriptions' do
-      allow(TwitchApiClient).to receive(:new).and_return(twitch_api_client)
-      allow(twitch_api_client).to receive(:delete_subscription_to_event).and_return({ status: '204' })
-
-      streamer.event_subscriptions.each do |subscription|
-        expect(twitch_api_client).to receive(:delete_subscription_to_event).with(subscription.twitch_id)
-      end
-
-      expect { streamer.destroy }.to change { EventSubscription.count }.by(-3)
+      expect { streamer.destroy }.to enqueue_sidekiq_job(Streamer::UnsubscribingFromTwitchEventsJob).with(streamer.id)
     end
   end
 end
