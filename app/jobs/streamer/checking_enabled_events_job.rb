@@ -9,7 +9,7 @@ class Streamer::CheckingEnabledEventsJob
   sidekiq_retry_in { 10.minutes.to_i }
 
   def perform(streamer_id)
-    streamer = Streamer.find(streamer_id)
+    return unless (streamer = Streamer.find_by(id: streamer_id))
     return if streamer.pending_events.blank?
 
     Streamer::SubscribingToTwitchEventsJob.perform_async(streamer.id)
