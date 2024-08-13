@@ -3,54 +3,69 @@
 require 'spec_helper'
 
 RSpec.describe TelegramBotClient do
-  let(:telegram_token) { 'fake_token' }
-  let(:api) { double('Telegram::Bot::Api') }
-  let(:rate_limiter) { instance_double(TelegramMessagesRateLimiter) }
+  let(:telegram_api) { double('Telegram::Bot::Api') }
+  let(:message) { { chat_id: '123', text: 'Hello!' } }
   let(:client) { described_class.new }
 
   before do
-    allow(App.secrets).to receive(:telegram_token).and_return(telegram_token)
-    allow(Telegram::Bot::Client).to receive(:new).with(telegram_token).and_return(double(api:))
-    allow(TelegramMessagesRateLimiter).to receive(:new).and_return(rate_limiter)
-    allow(rate_limiter).to receive(:wait_if_limits_exceeded)
-    allow(api).to receive(:send_message)
+    allow(Telegram::Bot::Client).to receive(:new).and_return(double(api: telegram_api))
   end
 
   describe '#send_message' do
-    it 'sends a message through the API' do
-      message = { chat_id: '123', text: 'Hello' }
+    it 'checks the global rate limit' do
+      allow(RateLimiter).to receive(:check)
+      allow(telegram_api).to receive(:send_message)
 
       client.send_message(message)
 
-      expect(rate_limiter).to have_received(:wait_if_limits_exceeded).with('123')
-      expect(api).to have_received(:send_message).with(message)
+      expect(RateLimiter).to have_received(:check).with('rate_limit:telegram_response', limit: 29)
     end
 
-    it 'logs an error if sending fails' do
-      message = { chat_id: '123', text: 'Hello' }
-
-      allow(api).to receive(:send_message).and_raise(StandardError, 'API error')
-
-      expect(App.logger).to receive(:log_error).with(
-        instance_of(StandardError),
-        'Delivery failure message: Hello to user 123: API error'
-      )
+    it 'checks the user rate limit' do
+      allow(RateLimiter).to receive(:check)
+      allow(telegram_api).to receive(:send_message)
 
       client.send_message(message)
+
+      expect(RateLimiter).to have_received(:check).with("rate_limit:chat_#{message[:chat_id]}", limit: 1)
+    end
+
+    it 'sends the message after checking rate limits' do
+      allow(RateLimiter).to receive(:check).and_return(nil)
+      allow(telegram_api).to receive(:send_message)
+
+      client.send_message(message)
+
+      expect(telegram_api).to have_received(:send_message).with(message)
     end
 
     context 'when a Telegram::Bot::Exceptions::ResponseError is raised' do
       it 'destroys the user and logs the error' do
         user = create(:user, chat_id: '123')
-        message = { chat_id: '123', text: 'Hello' }
         response = instance_double('Response', body: { 'error_code' => 403 }.to_json, status: 403)
         error = Telegram::Bot::Exceptions::ResponseError.new(response:)
-        allow(api).to receive(:send_message).with(message).and_raise(error)
+
+        allow(RateLimiter).to receive(:check).and_return(nil)
+        allow(telegram_api).to receive(:send_message).with(message).and_raise(error)
 
         expect(App.logger).to receive(:log_error)
           .with(error, "Caught specific Telegram exception. User: #{user.inspect}")
 
         expect { client.send_message(message) }.to change { User.count }.by(-1)
+      end
+    end
+
+    context 'when a StandardError is raised' do
+      it 'logs the error' do
+        error = StandardError.new('Some error')
+
+        allow(RateLimiter).to receive(:check).and_return(nil)
+        allow(telegram_api).to receive(:send_message).and_raise(error)
+
+        expect(App.logger).to receive(:log_error)
+          .with(error, "Delivery failure message: #{message[:text]} to user #{message[:chat_id]}: #{error.message}")
+
+        client.send_message(message)
       end
     end
   end

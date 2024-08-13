@@ -3,18 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
-  RSpec.shared_examples 'a streamer subscription error' do |expected_text|
-    it 'sends error message and doesn\'t trigger creation related logic' do
-      expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
-
-      expect { send_webhook_request }.not_to(change { Streamer.count })
-
-      expect(Streamer::SubscribingToTwitchEventsJob).not_to have_enqueued_sidekiq_job
-      expect(Streamer::CheckingEnabledEventsJob).not_to have_enqueued_sidekiq_job
-      expect(twitch_api_client).not_to have_received(:get_channel_info)
-    end
-  end
-
   describe '/sub some_streamer command' do
     let(:message_text) { '/sub some_streamer' }
 
@@ -109,6 +97,18 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
           expect { send_webhook_request }.not_to(change { user.subscriptions.reload.count })
         end
+      end
+    end
+
+    RSpec.shared_examples 'a streamer subscription error' do |expected_text|
+      it 'sends error message and doesn\'t trigger creation related logic' do
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+
+        expect { send_webhook_request }.not_to(change { Streamer.count })
+
+        expect(Streamer::SubscribingToTwitchEventsJob).not_to have_enqueued_sidekiq_job
+        expect(Streamer::CheckingEnabledEventsJob).not_to have_enqueued_sidekiq_job
+        expect(twitch_api_client).not_to have_received(:get_channel_info)
       end
     end
 

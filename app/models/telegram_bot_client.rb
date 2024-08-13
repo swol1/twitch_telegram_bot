@@ -2,12 +2,13 @@
 
 class TelegramBotClient
   def initialize
-    @messages_rate_limiter = TelegramMessagesRateLimiter.new
     @api = Telegram::Bot::Client.new(App.secrets.telegram_token).api
   end
 
   def send_message(message)
-    @messages_rate_limiter.wait_if_limits_exceeded(message[:chat_id])
+    RateLimiter.check('rate_limit:telegram_response', limit: 29)
+    RateLimiter.check("rate_limit:chat_#{message[:chat_id]}", limit: 1)
+
     @api.send_message(message)
   rescue Telegram::Bot::Exceptions::ResponseError => e
     user = User.find_by!(chat_id: message[:chat_id])

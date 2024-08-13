@@ -9,6 +9,7 @@ coverage
 /.env*
 !/.env.template
 !/.env.local.template
+!/.env.test
 
 # Ignore all logfiles and tempfiles.
 /log/*

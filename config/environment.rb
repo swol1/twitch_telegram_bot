@@ -4,8 +4,12 @@ ENV['RACK_ENV'] ||= 'development'
 
 require 'dotenv'
 
-env_file = ENV['RACK_ENV'] == 'production' ? '.env' : '.env.local'
-Dotenv.load(env_file)
+env_files = {
+  'production' => '.env',
+  'development' => '.env.local',
+  'test' => '.env.test'
+}
+Dotenv.load(env_files.fetch(ENV.fetch('RACK_ENV', nil), 'test'))
 
 require_relative 'boot'
 require_relative 'application'

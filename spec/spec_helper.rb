@@ -5,6 +5,7 @@ ENV['RACK_ENV'] = 'test'
 require_relative '../config/environment'
 require 'active_support/testing/time_helpers'
 require 'simplecov'
+require 'webmock/rspec'
 
 SimpleCov.start
 
