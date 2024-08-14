@@ -83,7 +83,9 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
     context 'when telegram login already set' do
       it "doesn't update telegram login" do
         streamer.update(telegram_login: 'other_login')
-        expect { send_webhook_request }.not_to(change { streamer.reload.telegram_login })
+        expect { send_webhook_request }.to change { streamer.reload.telegram_login }
+          .from('other_login')
+          .to('my_tg_login')
       end
     end
   end

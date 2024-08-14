@@ -7,7 +7,7 @@ module TelegramCommands
       @chat = chat
       @args = args
       @telegram_bot_client = TelegramBotClient.new
-      set_locale
+      I18n.locale = user.locale
     end
 
     def execute
@@ -15,10 +15,6 @@ module TelegramCommands
     end
 
     private
-
-    def set_locale
-      I18n.locale = user.locale
-    end
 
     def send_message(text:)
       @telegram_bot_client.send_message(

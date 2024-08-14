@@ -41,7 +41,7 @@ RSpec.describe Streamer, type: :model do
         streamer.update(telegram_login: 'existing_login')
         streamer.channel_info[:title] = 't.me/test_telegram'
         streamer.set_telegram_login_from_title
-        expect(streamer.telegram_login).to eq('existing_login')
+        expect(streamer.telegram_login).to eq('test_telegram')
       end
 
       it 'does not change telegram login if title nil' do

@@ -7,7 +7,7 @@ class TwitchEvent::ProcessJob
   def perform(params)
     event = TwitchEvent.new(params)
     if event.valid? && event.not_duplicated?
-      process_event(event)
+      "TwitchEvents::#{event.type.tr('.', '_').classify}".constantize.new(event).process
     else
       App.logger.log_error(
         nil,
@@ -15,11 +15,5 @@ class TwitchEvent::ProcessJob
         "valid: #{event.valid?}, not_duplicated: #{event.not_duplicated?}"
       )
     end
-  end
-
-  private
-
-  def process_event(event)
-    "TwitchEvents::#{event.type.tr('.', '_').classify}".constantize.new(event).process
   end
 end

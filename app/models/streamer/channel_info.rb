@@ -21,7 +21,6 @@ module Streamer::ChannelInfo
   end
 
   def set_telegram_login_from_title
-    return if telegram_login.present?
     return unless (title = channel_info[:title])
 
     telegram_login = title[TELEGRAM_REGEX, 1]
