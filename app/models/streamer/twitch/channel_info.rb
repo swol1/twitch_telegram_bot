@@ -9,6 +9,7 @@ class Streamer
       end
 
       def update_streamer_channel_info
+        return if @streamer.channel_info[:title].present?
         return unless (channel_info = fetch_channel_info.presence)
 
         @streamer.channel_info.update(

@@ -4,7 +4,7 @@ class EventSubscriptionNotCreatedError < StandardError; end
 
 class Streamer::SubscribingToTwitchEventsJob
   include Sidekiq::Job
-  sidekiq_options retry: 3
+  sidekiq_options retry: 1
 
   def perform(streamer_id)
     streamer = Streamer.find(streamer_id)

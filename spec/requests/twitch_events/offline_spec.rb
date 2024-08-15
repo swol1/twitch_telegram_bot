@@ -8,10 +8,6 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
   subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
 
-  around do |ex|
-    Sidekiq::Testing.inline! { ex.run }
-  end
-
   describe 'POST channel.offline event' do
     context 'when status changed' do
       before { streamer.channel_info[:status] = 'online' }

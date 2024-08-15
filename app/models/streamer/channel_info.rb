@@ -8,7 +8,7 @@ module Streamer::ChannelInfo
 
   included do
     kredis_hash :channel_info,
-                key: ->(s) { "streamer_id:#{s.id}" },
+                key: ->(s) { "streamer_id:#{s.twitch_id}" },
                 after_change: lambda(&:expire_channel_info)
   end
 

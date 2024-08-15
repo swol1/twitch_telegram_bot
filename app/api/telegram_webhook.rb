@@ -58,8 +58,7 @@ class TelegramWebhook < Grape::API
       handle_chat_member_status
       return_no_content
     else
-      message = Telegram::Bot::Types::Update.new(params).current_message
-      TelegramCommands::Invoker.new(message).execute
+      TelegramCommand::InvokeJob.perform_async(params.to_json)
       status 200
     end
   end

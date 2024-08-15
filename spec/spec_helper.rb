@@ -64,6 +64,10 @@ RSpec.configure do |config|
     end
   end
 
+  config.around(:each, type: :request) do |ex|
+    Sidekiq::Testing.inline! { ex.run }
+  end
+
   config.example_status_persistence_file_path = 'spec/examples.txt'
   config.disable_monkey_patching!
   config.profile_examples = 5
