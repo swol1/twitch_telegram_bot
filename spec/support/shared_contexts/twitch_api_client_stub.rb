@@ -5,15 +5,15 @@ RSpec.shared_context 'with stubbed twitch api client' do
 
   before do
     allow(TwitchApiClient).to receive(:new).and_return(twitch_api_client)
-    allow(twitch_api_client).to receive(:get_channel_info)
-    allow(twitch_api_client).to receive(:get_streamer)
-    allow(twitch_api_client).to receive(:subscribe_to_event)
+    allow(twitch_api_client).to receive(:get_channel_info).and_return(success_response)
+    allow(twitch_api_client).to receive(:get_streamer).and_return(success_response)
+    allow(twitch_api_client).to receive(:subscribe_to_event).and_return(success_response)
   end
 
   def success_response(**body)
     {
       status: '200',
-      body:
+      body: body.presence || { data: [] }
     }
   end
 

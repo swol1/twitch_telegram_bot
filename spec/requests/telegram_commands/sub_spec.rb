@@ -8,6 +8,11 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
     subject(:send_webhook_request) { post '/telegram/webhook', message_params.to_json, headers }
 
+    before do
+      allow(Streamer::SubscribingToTwitchEventsJob).to receive(:perform_async)
+      allow(Streamer::CheckingEnabledEventsJob).to receive(:perform_in)
+    end
+
     context 'when login not provided' do
       let(:message_text) { '/sub' }
 
@@ -52,9 +57,10 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
       it 'enqueues jobs' do
         freeze_time do
-          expect { send_webhook_request }
-            .to enqueue_sidekiq_job(Streamer::SubscribingToTwitchEventsJob).with(1)
-            .and enqueue_sidekiq_job(Streamer::CheckingEnabledEventsJob).with(1).in(10.minutes)
+          send_webhook_request
+
+          expect(Streamer::SubscribingToTwitchEventsJob).to have_received(:perform_async).with(1)
+          expect(Streamer::CheckingEnabledEventsJob).to have_received(:perform_in).with(10.minutes, 1)
         end
       end
 
@@ -75,8 +81,9 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
       context 'when streamer info not available' do
         it 'returns message without streamer info' do
-          allow(twitch_api_client).to receive(:get_channel_info).with('twitch_1')
-                                                                .and_return(success_response(data: [{}]))
+          allow(twitch_api_client).to receive(:get_channel_info)
+            .with('twitch_1')
+            .and_return(success_response(data: [{}]))
           expected_text = <<~TEXT.strip
             You have successfully subscribed to notifications from <b>SomeStreamer</b>.
             Number of available subscriptions: 14
@@ -106,8 +113,8 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
         expect { send_webhook_request }.not_to(change { Streamer.count })
 
-        expect(Streamer::SubscribingToTwitchEventsJob).not_to have_enqueued_sidekiq_job
-        expect(Streamer::CheckingEnabledEventsJob).not_to have_enqueued_sidekiq_job
+        expect(Streamer::SubscribingToTwitchEventsJob).not_to have_received(:perform_async)
+        expect(Streamer::CheckingEnabledEventsJob).not_to have_received(:perform_in)
         expect(twitch_api_client).not_to have_received(:get_channel_info)
       end
     end
