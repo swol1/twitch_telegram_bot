@@ -2,7 +2,7 @@
 
 class TwitchEvent::ProcessJob
   include Sidekiq::Job
-  sidekiq_options retry: 1
+  sidekiq_options retry: 0
 
   def perform(params)
     event = TwitchEvent.new(params)

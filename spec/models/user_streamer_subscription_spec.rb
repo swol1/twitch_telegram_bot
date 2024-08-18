@@ -15,7 +15,7 @@ RSpec.describe UserStreamerSubscription, type: :model do
   end
 
   describe 'after_destroy callback' do
-    let(:streamer) { create(:streamer) }
+    let(:streamer) { create(:streamer, :with_enabled_subscriptions) }
     let(:user1) { create(:user) }
     let(:user2) { create(:user) }
 

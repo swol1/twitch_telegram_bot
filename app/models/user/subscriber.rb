@@ -21,9 +21,9 @@ module User::Subscriber
   def unsubscribe_from(login)
     streamer = Streamer.find_by(login:)
     subscription = subscriptions.find_by(id: streamer&.id)
-    return unless streamer && subscription
+    return false unless streamer && subscription
 
-    subscription.destroy
+    subscription.destroy!
   end
 
   def unsubscribe_from_all

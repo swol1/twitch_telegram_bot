@@ -32,7 +32,7 @@ RSpec.describe User, type: :model do
 
   describe 'Subscriber module methods' do
     let(:user) { create(:user) }
-    let(:streamer) { create(:streamer) }
+    let(:streamer) { create(:streamer, :with_enabled_subscriptions) }
 
     describe '#unsubscribe_from' do
       it 'removes a subscription by streamer login' do

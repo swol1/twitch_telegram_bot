@@ -23,9 +23,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         expect { send_webhook_request }
           .to change { streamer.reload.telegram_login }.from(nil).to('my_tg_login')
           .and change { streamer.channel_info[:title] }.from('title').to('some_title t.me/my_tg_login')
-                                                       .and change {
-                                                              streamer.channel_info[:category]
-                                                            }.from('category').to('some_category')
+          .and change { streamer.channel_info[:category] }.from('category').to('some_category')
       end
 
       it 'notifies subscribers' do

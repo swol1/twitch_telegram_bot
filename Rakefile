@@ -15,6 +15,8 @@ end
 
 require 'rake'
 
+Dir.glob(File.join(__dir__, 'rake', '**', '*.rb')).each(&method(:require))
+
 task :environment do
   require File.expand_path('config/environment.rb', __dir__)
 end

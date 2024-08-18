@@ -29,7 +29,7 @@ class TwitchWebhook < Grape::API
     end
 
     def event_subscription
-      @_event_subscription ||= EventSubscription.find_by!(twitch_id: params['subscription']['id'])
+      @_event_subscription ||= EventSubscription.find_by(twitch_id: params['subscription']['id'])
     end
 
     def event_params
@@ -47,6 +47,7 @@ class TwitchWebhook < Grape::API
 
   before do
     error!('Invalid signature', 403) unless verify_twitch_signature
+    error!('Invalid event subscription', 422) unless event_subscription.present?
   end
 
   params do

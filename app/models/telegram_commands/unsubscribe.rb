@@ -17,6 +17,9 @@ module TelegramCommands
       else
         I18n.t('errors.user_not_subscribed', login:)
       end
+    rescue ActiveRecord::RecordNotDestroyed => e
+      App.logger.log_error(e, 'Streamer Not Destroyed')
+      I18n.t('errors.generic')
     end
   end
 end

@@ -56,8 +56,9 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         event_subscription.enabled!
 
         expect(twitch_api_client).not_to receive(:delete_subscription_to_event)
-        expect { send_request }.to change { Streamer.count }.by(-1)
-                                                            .and change { EventSubscription.count }.by(-3)
+        expect { send_request }
+          .to change { Streamer.count }.by(-1)
+          .and change { EventSubscription.count }.by(-3)
         expect(last_response.status).to eq(204)
       end
     end
@@ -72,6 +73,21 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
         expect(last_response.status).to eq(403)
         expect(last_response.body).to include('Invalid signature')
+      end
+    end
+
+    context 'when the event subscription does not exist' do
+      let(:message_type) { 'notification' }
+
+      it 'returns a 422 status' do
+        allow(TwitchEvent::ProcessJob).to receive(:perform_async)
+        event_subscription.destroy
+
+        send_request
+
+        expect(last_response.status).to eq(422)
+        expect(last_response.body).to include('Invalid event subscription')
+        expect(TwitchEvent::ProcessJob).not_to have_received(:perform_async)
       end
     end
 
