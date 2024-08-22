@@ -20,6 +20,11 @@ class TelegramWebhook < Grape::API
 
       User.find_by(chat_id: params[:my_chat_member][:chat][:id])&.destroy
     end
+
+    def can_use_bot?
+      telegram_id = params[:message][:from][:id]
+      User.exists?(telegram_id:) || !User.max_users_reached?
+    end
   end
 
   before do
@@ -56,10 +61,15 @@ class TelegramWebhook < Grape::API
   post '/webhook' do
     if params[:my_chat_member]
       handle_chat_member_status
-      return_no_content
-    else
+    elsif can_use_bot?
       TelegramCommand::InvokeJob.perform_async(params.to_json)
-      status 200
+    else
+      locale = (I18n.available_locales & [params[:message][:from][:language_code]&.to_sym]).first || I18n.default_locale
+      TelegramBotClient.new.send_message(
+        chat_id: params[:message][:chat][:id],
+        text: I18n.t('errors.max_users_reached', locale:)
+      )
     end
+    status 200
   end
 end

@@ -57,5 +57,40 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         expect { post '/telegram/webhook', chat_member_params.to_json, headers }.not_to(change { User.count })
       end
     end
+
+    context 'when max user limit is reached' do
+      before { allow(TelegramCommand::InvokeJob).to receive(:perform_async) }
+
+      it 'does not invoke command and sends error response' do
+        create(:user)
+        updated_message_params = message_params.deep_merge(
+          message: {
+            from: { id: 123_456_789, language_code: 'ru' },
+            chat: { id: 123_456_789 }
+          }
+        )
+
+        expect(User.max_users_reached?).to be_truthy
+
+        post '/telegram/webhook', updated_message_params.to_json, headers
+
+        expect(TelegramCommand::InvokeJob).not_to have_received(:perform_async)
+        expect(telegram_bot_client).to have_received(:send_message)
+          .with({
+                  chat_id: 123_456_789,
+                  text: I18n.t('errors.max_users_reached', locale: :ru)
+                })
+      end
+
+      it 'invokes command if user exists' do
+        create(:user)
+
+        expect(User.max_users_reached?).to be_truthy
+
+        post '/telegram/webhook', message_params.to_json, headers
+
+        expect(TelegramCommand::InvokeJob).to have_received(:perform_async)
+      end
+    end
   end
 end

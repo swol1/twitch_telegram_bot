@@ -10,7 +10,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
       expected_text = <<~TEXT.strip
         Hi there, John Doe! 👋
 
-        🚀 You can subscribe to streamers and receive notifications, when they go live, switch categories, or change titles. Remember, you can follow up to 15 streamers simultaneously. Enjoy the experience!
+        🚀 You can subscribe to streamers and receive notifications, when they go live, switch categories, or change titles. Remember, you can follow up to 2 streamers simultaneously. Enjoy the experience!
 
         <code>sub streamer_login</code> - subscribe to <i>streamer_login</i> notifications
         <code>unsub streamer_login</code> - unsubscribe from <i>streamer_login</i> notifications

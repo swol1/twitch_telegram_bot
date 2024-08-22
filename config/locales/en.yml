@@ -13,6 +13,7 @@ en:
     generic: An internal error occurred. Please try again later.
     login_not_provided: You didn't provide a login.
     max_subs_reached: You don't have any available subscriptions left. To check your current subscriptions - /list
+    max_users_reached: The bot currently cannot add new users. Try again later, if someone unsubscribes from the bot, you may be able to subscribe.
     not_uniq_subscription: You are already subscribed to <b>%{name}</b>.
     streamer_not_found: |-
       Streamer <b>%{login}</b> not found.

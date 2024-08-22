@@ -26,12 +26,10 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
     context 'when user reached max amount of subscriptions' do
       it 'sends error' do
-        stub_const('User::Subscriber::MAX_SUBSCRIPTIONS', 2)
-
         streamers = create_list(:streamer, 2)
         user.subscriptions << streamers
 
-        expected_text = I18n.t('errors.max_subs_reached', max_subs: User::Subscriber::MAX_SUBSCRIPTIONS)
+        expected_text = I18n.t('errors.max_subs_reached', max_subs: 2)
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
 
         expect { send_webhook_request }.not_to(change { user.subscriptions.reload.count })
@@ -67,7 +65,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
       it 'returns message with streamer info' do
         expected_text = <<~TEXT.strip
           You have successfully subscribed to notifications from <b>SomeStreamer</b>.
-          Number of available subscriptions: 14
+          Number of available subscriptions: 1
 
           Category: some_game
           Title: my title t.me/my_tg_login
@@ -86,7 +84,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
             .and_return(success_response(data: [{}]))
           expected_text = <<~TEXT.strip
             You have successfully subscribed to notifications from <b>SomeStreamer</b>.
-            Number of available subscriptions: 14
+            Number of available subscriptions: 1
           TEXT
           expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
 
