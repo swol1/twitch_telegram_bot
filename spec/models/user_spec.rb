@@ -23,10 +23,9 @@ RSpec.describe User, type: :model do
     end
 
     it 'does not override a valid locale' do
-      I18n.available_locales = %i[en es]
-      user = User.new(telegram_id: '12345', chat_id: '67890', locale: 'es')
+      user = User.new(telegram_id: '12345', chat_id: '67890', locale: 'ru')
       user.save
-      expect(user.locale).to eq('es')
+      expect(user.locale).to eq('ru')
     end
   end
 
