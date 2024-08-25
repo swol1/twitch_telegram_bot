@@ -22,8 +22,8 @@ class TelegramWebhook < Grape::API
     end
 
     def can_use_bot?
-      telegram_id = params[:message][:from][:id]
-      User.exists?(telegram_id:) || !User.max_users_reached?
+      chat_id = params[:message][:chat][:id]
+      User.exists?(chat_id:) || !User.max_users_reached?
     end
   end
 

@@ -2,7 +2,6 @@
 
 FactoryBot.define do
   factory :user do
-    sequence(:telegram_id)
     sequence(:chat_id)
     locale { 'en' }
   end

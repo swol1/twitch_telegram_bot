@@ -26,8 +26,7 @@ module TelegramCommands
     end
 
     def user
-      @_user ||= User.create_with(locale: @from.language_code)
-                     .find_or_create_by!(telegram_id: @from.id, chat_id: @chat.id)
+      @_user ||= User.create_with(locale: @from.language_code).find_or_create_by!(chat_id: @chat.id)
     end
   end
 end

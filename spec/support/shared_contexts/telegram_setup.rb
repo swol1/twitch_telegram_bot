@@ -14,7 +14,7 @@ RSpec.shared_context 'with default telegram setup' do
       message: {
         message_id: 1,
         from: {
-          id: user.telegram_id,
+          id: SecureRandom.random_number(1_000_000),
           is_bot: false,
           first_name: 'John',
           last_name: 'Doe',
@@ -22,7 +22,7 @@ RSpec.shared_context 'with default telegram setup' do
           language_code: 'en'
         },
         chat: {
-          id: user.chat_id,
+          id: user.chat_id.to_i,
           first_name: 'John',
           last_name: 'Doe',
           username: 'johndoe',
