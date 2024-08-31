@@ -19,7 +19,7 @@ module TwitchEvents
     def notify_subscribers(text:)
       streamer.subscribers.each do |subscriber|
         @telegram_bot_client.send_message(
-          chat_id: subscriber.chat_id,
+          chat_id: subscriber.telegram_id,
           text: text[subscriber.locale].html_safe,
           reply_markup: social_links_keyboard,
           disable_web_page_preview: true,

@@ -18,10 +18,10 @@ RSpec.describe TelegramBotClient do
 
       client.send_message(message)
 
-      expect(RateLimiter).to have_received(:check).with('rate_limit:telegram_response', limit: 29)
+      expect(RateLimiter).to have_received(:check).with('rate_limit:chats', limit: 29)
     end
 
-    it 'checks the user rate limit' do
+    it 'checks the chat rate limit' do
       allow(RateLimiter).to receive(:check)
       allow(telegram_api).to receive(:send_message)
 
@@ -40,8 +40,8 @@ RSpec.describe TelegramBotClient do
     end
 
     context 'when a Telegram::Bot::Exceptions::ResponseError is raised' do
-      it 'destroys the user and logs the error' do
-        user = create(:user, chat_id: '123')
+      it 'destroys the chat and logs the error' do
+        chat = create(:chat, telegram_id: '123')
         response = instance_double('Response', body: { 'error_code' => 403 }.to_json, status: 403)
         error = Telegram::Bot::Exceptions::ResponseError.new(response:)
 
@@ -49,9 +49,9 @@ RSpec.describe TelegramBotClient do
         allow(telegram_api).to receive(:send_message).with(message).and_raise(error)
 
         expect(App.logger).to receive(:log_error)
-          .with(error, "Caught specific Telegram exception. User: #{user.inspect}")
+          .with(error, "Caught specific Telegram exception. Chat: #{chat.inspect}")
 
-        expect { client.send_message(message) }.to change { User.count }.by(-1)
+        expect { client.send_message(message) }.to change { Chat.count }.by(-1)
       end
     end
 
@@ -63,7 +63,7 @@ RSpec.describe TelegramBotClient do
         allow(telegram_api).to receive(:send_message).and_raise(error)
 
         expect(App.logger).to receive(:log_error)
-          .with(error, "Delivery failure message: #{message[:text]} to user #{message[:chat_id]}: #{error.message}")
+          .with(error, "Delivery failure message: #{message[:text]} to chat #{message[:chat_id]}: #{error.message}")
 
         client.send_message(message)
       end

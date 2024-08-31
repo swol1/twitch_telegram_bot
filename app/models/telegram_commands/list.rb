@@ -13,7 +13,7 @@ module TelegramCommands
 
     private
 
-    def streamers = @_streamers ||= user.subscriptions
+    def streamers = @_streamers ||= chat.subscriptions
 
     def subscriptions_text
       subscribed_to = streamers.map { "<b>#{_1.login}</b>" }.join(', ')

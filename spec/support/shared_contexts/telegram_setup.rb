@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_context 'with default telegram setup' do
-  let!(:user) { create(:user) }
+  let!(:chat) { create(:chat) }
   let(:headers) do
     {
       'CONTENT_TYPE' => 'application/json',
@@ -22,7 +22,7 @@ RSpec.shared_context 'with default telegram setup' do
           language_code: 'en'
         },
         chat: {
-          id: user.chat_id.to_i,
+          id: chat.telegram_id.to_i,
           first_name: 'John',
           last_name: 'Doe',
           username: 'johndoe',

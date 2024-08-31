@@ -18,12 +18,12 @@ class TelegramWebhook < Grape::API
     def handle_chat_member_status
       return unless params[:my_chat_member][:new_chat_member][:status] == 'kicked'
 
-      User.find_by(chat_id: params[:my_chat_member][:chat][:id])&.destroy
+      Chat.find_by(telegram_id: params[:my_chat_member][:chat][:id])&.destroy
     end
 
     def can_use_bot?
-      chat_id = params[:message][:chat][:id]
-      User.exists?(chat_id:) || !User.max_users_reached?
+      telegram_id = params[:message][:chat][:id]
+      Chat.exists?(telegram_id:) || !Chat.max_chats_reached?
     end
   end
 
@@ -67,7 +67,7 @@ class TelegramWebhook < Grape::API
       locale = (I18n.available_locales & [params[:message][:from][:language_code]&.to_sym]).first || I18n.default_locale
       TelegramBotClient.new.send_message(
         chat_id: params[:message][:chat][:id],
-        text: I18n.t('errors.max_users_reached', locale:)
+        text: I18n.t('errors.max_chats_reached', locale:)
       )
     end
     status 200

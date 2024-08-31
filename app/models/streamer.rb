@@ -3,8 +3,8 @@
 class Streamer < ActiveRecord::Base
   include ChannelInfo, EventSubscriptions
 
-  has_many :user_streamer_subscriptions, dependent: :destroy
-  has_many :subscribers, through: :user_streamer_subscriptions, source: :user
+  has_many :chat_streamer_subscriptions, dependent: :destroy
+  has_many :subscribers, through: :chat_streamer_subscriptions, source: :chat
 
   validates :login, presence: true, uniqueness: true
   validates :name, presence: true

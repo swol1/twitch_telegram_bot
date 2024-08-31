@@ -2,12 +2,12 @@
 
 module TelegramCommands
   class Base
-    def initialize(from, chat, args)
+    def initialize(from, telegram_chat, args)
       @from = from
-      @chat = chat
+      @telegram_chat = telegram_chat
       @args = args
       @telegram_bot_client = TelegramBotClient.new
-      I18n.locale = user.locale
+      I18n.locale = chat.locale
     end
 
     def execute
@@ -18,15 +18,15 @@ module TelegramCommands
 
     def send_message(text:)
       @telegram_bot_client.send_message(
-        chat_id: user.chat_id,
+        chat_id: chat.telegram_id,
         disable_web_page_preview: true,
         parse_mode: :html,
         text: text.html_safe
       )
     end
 
-    def user
-      @_user ||= User.create_with(locale: @from.language_code).find_or_create_by!(chat_id: @chat.id)
+    def chat
+      @_chat ||= Chat.create_with(locale: @from.language_code).find_or_create_by!(telegram_id: @telegram_chat.id)
     end
   end
 end

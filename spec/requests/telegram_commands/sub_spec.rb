@@ -18,21 +18,21 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
       it 'sends error' do
         expected_text = I18n.t('errors.login_not_provided')
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
         send_webhook_request
       end
     end
 
-    context 'when user reached max amount of subscriptions' do
+    context 'when chat reached max amount of subscriptions' do
       it 'sends error' do
         streamers = create_list(:streamer, 2)
-        user.subscriptions << streamers
+        chat.subscriptions << streamers
 
         expected_text = I18n.t('errors.max_subs_reached', max_subs: 2)
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-        expect { send_webhook_request }.not_to(change { user.subscriptions.reload.count })
+        expect { send_webhook_request }.not_to(change { chat.subscriptions.reload.count })
       end
     end
 
@@ -46,11 +46,11 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         )
       end
 
-      it 'subscribes user to streamer' do
-        expect { send_webhook_request }.to change { user.subscriptions.reload.count }.by(1)
+      it 'subscribes chat to streamer' do
+        expect { send_webhook_request }.to change { chat.subscriptions.reload.count }.by(1)
 
         streamer = Streamer.last
-        expect(user.subscriptions.last).to eq(streamer)
+        expect(chat.subscriptions.last).to eq(streamer)
       end
 
       it 'enqueues jobs' do
@@ -72,7 +72,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
           twitch: https://twitch.tv/some_streamer
           telegram: https://t.me/my_tg_login
         TEXT
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
         send_webhook_request
       end
@@ -86,28 +86,28 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
             You have successfully subscribed to notifications from <b>SomeStreamer</b>.
             Number of available subscriptions: 1
           TEXT
-          expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+          expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
           send_webhook_request
         end
       end
 
-      context 'when user already subscribed to the streamer' do
+      context 'when chat already subscribed to the streamer' do
         it 'sends error' do
           streamer = Streamer.create(login: 'some_streamer', twitch_id: 'twitch_1', name: 'SomeStreamer')
-          user.subscriptions << streamer
+          chat.subscriptions << streamer
 
           expected_text = I18n.t('errors.not_uniq_subscription', name: streamer.name)
-          expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+          expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-          expect { send_webhook_request }.not_to(change { user.subscriptions.reload.count })
+          expect { send_webhook_request }.not_to(change { chat.subscriptions.reload.count })
         end
       end
     end
 
     RSpec.shared_examples 'a streamer subscription error' do |expected_text|
       it 'sends error message and doesn\'t trigger creation related logic' do
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
         expect { send_webhook_request }.not_to(change { Streamer.count })
 

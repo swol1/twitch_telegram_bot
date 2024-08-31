@@ -40,6 +40,11 @@ Generate tokens for:
 - `TWITCH_MESSAGE_SECRET`
 - `TELEGRAM_SECRET_TOKEN`
 
+Generate secret values for database encryption (can be omitted):
+- `DB_ENCRYPTION_PRIMARY_KEY`
+- `DB_ENCRYPTION_DETERMINISTIC_KEY`
+- `DB_ENCRYPTION_KEY_DERIVATION_SALT`
+
 ### 4. Create and Configure Your Twitch and Telegram Accounts
 
 - Create a Twitch application at [Twitch Developers Console](https://dev.twitch.tv/console) and fill in the environment variables:
@@ -150,6 +155,10 @@ Example:
 ```bash
 curl -X POST "https://api.telegram.org/bot123456VERY-SECRET-TOKEN/setWebhook?url=https://1111-11-111-111-111.ngrok-free.app/telegram/webhook&secret_token=my_secret_token"
 ```
+
+## Setup Sentry
+
+You can receive sentry reports by providing `<SENTRY_DSN>`
 
 ## License
 

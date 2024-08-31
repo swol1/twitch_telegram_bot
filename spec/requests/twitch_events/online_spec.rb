@@ -21,7 +21,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       end
 
       it 'notifies subscribers' do
-        users = create_list(:user, 3, subscriptions: [streamer])
+        chats = create_list(:chat, 3, subscriptions: [streamer])
 
         expected_text = '<b>Streamer Name</b> 😀 is online'
         expect(telegram_bot_client).to receive_send_message_with(
@@ -35,7 +35,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
               ]]
             )
           }
-        ).to_users(users)
+        ).to_chats(chats)
 
         send_webhook_request
 
@@ -54,7 +54,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
           .to change { streamer.channel_info[:status] }.from('offline').to('online')
       end
 
-      it 'doesn\'t send message to users' do
+      it 'doesn\'t send message to chats' do
         send_webhook_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)

@@ -3,7 +3,7 @@
 module TelegramCommands
   class Subscribe < Base
     def execute
-      text = subscribe_user_to_streamer
+      text = subscribe_chat_to_streamer
       send_message(text:)
     end
 
@@ -11,14 +11,14 @@ module TelegramCommands
 
     def login = @args
 
-    def subscribe_user_to_streamer
+    def subscribe_chat_to_streamer
       return I18n.t('errors.login_not_provided') unless login
-      return I18n.t('errors.max_subs_reached') if user.max_subscriptions_reached?
+      return I18n.t('errors.max_subs_reached') if chat.max_subscriptions_reached?
 
       streamer = Streamer.find_or_create_from_twitch(login)
-      return I18n.t('errors.not_uniq_subscription', name: streamer.name) if user.subscribed_to?(streamer.id)
+      return I18n.t('errors.not_uniq_subscription', name: streamer.name) if chat.subscribed_to?(streamer.id)
 
-      if user.subscribe_to(streamer)
+      if chat.subscribe_to(streamer)
         streamer_info_text(streamer)
       else
         I18n.t('errors.generic')
@@ -35,7 +35,7 @@ module TelegramCommands
       I18n.t(
         'streamer_subscription.subscribed_success',
         name: streamer.name,
-        left_subs: user.left_subscriptions
+        left_subs: chat.left_subscriptions
       ) + ("\n\n#{streamer_info}".presence || '')
     end
   end

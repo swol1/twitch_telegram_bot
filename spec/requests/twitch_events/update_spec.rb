@@ -27,7 +27,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       end
 
       it 'notifies subscribers' do
-        users = create_list(:user, 3, subscriptions: [streamer])
+        chats = create_list(:chat, 3, subscriptions: [streamer])
 
         expected_text = <<~TEXT.strip
           <b>Streamer Name</b> 😀
@@ -48,7 +48,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
               ]]
             )
           }
-        ).to_users(users)
+        ).to_chats(chats)
 
         send_webhook_request
 
@@ -66,7 +66,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
           .and(not_change { streamer.channel_info[:category] })
       end
 
-      it 'doesn\'t notify users' do
+      it 'doesn\'t notify chats' do
         send_webhook_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)
