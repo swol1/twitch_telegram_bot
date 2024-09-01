@@ -10,7 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_25_193211) do
+ActiveRecord::Schema[7.1].define(version: 2024_08_31_135433) do
+  create_table "chat_streamer_subscriptions", force: :cascade do |t|
+    t.integer "chat_id", null: false
+    t.integer "streamer_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chat_id", "streamer_id"], name: "index_chat_streamer_subscriptions_on_chat_id_and_streamer_id", unique: true
+    t.index ["chat_id"], name: "index_chat_streamer_subscriptions_on_chat_id"
+    t.index ["streamer_id"], name: "index_chat_streamer_subscriptions_on_streamer_id"
+  end
+
+  create_table "chats", force: :cascade do |t|
+    t.string "locale", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "telegram_id", null: false
+    t.index ["telegram_id"], name: "index_chats_on_telegram_id", unique: true
+  end
+
   create_table "event_subscriptions", force: :cascade do |t|
     t.string "event_type", null: false
     t.string "streamer_twitch_id", null: false
@@ -35,24 +53,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_25_193211) do
     t.index ["twitch_id"], name: "index_streamers_on_twitch_id", unique: true
   end
 
-  create_table "user_streamer_subscriptions", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "streamer_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["streamer_id"], name: "index_user_streamer_subscriptions_on_streamer_id"
-    t.index ["user_id", "streamer_id"], name: "index_user_streamer_subscriptions_on_user_id_and_streamer_id", unique: true
-    t.index ["user_id"], name: "index_user_streamer_subscriptions_on_user_id"
-  end
-
-  create_table "users", force: :cascade do |t|
-    t.string "locale", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "chat_id", null: false
-    t.index ["chat_id"], name: "index_users_on_chat_id", unique: true
-  end
-
-  add_foreign_key "user_streamer_subscriptions", "streamers"
-  add_foreign_key "user_streamer_subscriptions", "users"
+  add_foreign_key "chat_streamer_subscriptions", "chats"
+  add_foreign_key "chat_streamer_subscriptions", "streamers"
 end

@@ -8,41 +8,41 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
     subject(:send_webhook_request) { post '/telegram/webhook', message_params.to_json, headers }
 
-    context 'when user has no subscriptions' do
+    context 'when chat has no subscriptions' do
       it 'doesn\'t send message' do
         expected_text = I18n.t('streamer_subscription.info.not_subscribed')
 
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
         send_webhook_request
       end
     end
 
-    context 'when user has subscriptions but no streamers info' do
+    context 'when chat has subscriptions but no streamers info' do
       it 'sends a message indicating no subscriptions' do
         streamers = 1.upto(2).map do |i|
           create(:streamer, login: "streamer_login_#{i}", name: "Streamer #{i}", twitch_id: i.to_s)
         end
-        user.subscriptions << streamers
+        chat.subscriptions << streamers
 
         expected_text = <<~TEXT.strip
           You are subscribed to: <b>streamer_login_1</b>, <b>streamer_login_2</b>
 
           Data is not available yet 😢
         TEXT
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
         send_webhook_request
       end
     end
 
-    context 'when user has subscriptions and info' do
+    context 'when chat has subscriptions and info' do
       it 'sends a message listing the subscriptions and their info' do
         streamers = 1.upto(3).map do |i|
           create(:streamer, login: "streamer_login_#{i}", name: "Streamer #{i}", twitch_id: i.to_s)
         end
 
-        user.subscriptions << streamers
+        chat.subscriptions << streamers
         streamers[0].channel_info.update(title: 'Some Title', category: 'Some Category', status: 'Offline')
         streamers[1].channel_info.update(title: '', status: '')
         streamers[2].channel_info.update(title: 'Some Title t.me/my_login', status: 'online')
@@ -61,7 +61,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
           twitch: https://twitch.tv/streamer_login_3
           telegram: https://t.me/my_login
         TEXT
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
         send_webhook_request
       end

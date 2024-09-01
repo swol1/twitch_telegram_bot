@@ -3,14 +3,14 @@
 module TelegramCommands
   class UnsubscribeAll < Base
     def execute
-      text = unsubscribe_user_from_all_streamers
+      text = unsubscribe_chat_from_all_streamers
       send_message(text:)
     end
 
     private
 
-    def unsubscribe_user_from_all_streamers
-      user.unsubscribe_from_all
+    def unsubscribe_chat_from_all_streamers
+      chat.unsubscribe_from_all
       I18n.t('streamer_subscription.unsubscribed_all')
     end
   end

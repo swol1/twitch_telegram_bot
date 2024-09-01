@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-module User::Subscriber
+module Chat::Subscriber
   extend ActiveSupport::Concern
 
   included do
-    has_many :user_streamer_subscriptions, dependent: :destroy
-    has_many :subscriptions, through: :user_streamer_subscriptions, source: :streamer
+    has_many :chat_streamer_subscriptions, dependent: :destroy
+    has_many :subscriptions, through: :chat_streamer_subscriptions, source: :streamer
   end
 
   def subscribed_to?(streamer_id) = subscriptions.exists?(streamer_id)
-  def max_subscriptions_reached? = subscriptions.count >= App.secrets.max_user_subscriptions
-  def left_subscriptions = App.secrets.max_user_subscriptions - subscriptions.count
+  def max_subscriptions_reached? = subscriptions.count >= App.secrets.max_chat_subscriptions
+  def left_subscriptions = App.secrets.max_chat_subscriptions - subscriptions.count
 
   def subscribe_to(streamer)
     subscriptions << streamer unless max_subscriptions_reached?

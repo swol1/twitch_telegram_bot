@@ -21,7 +21,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
         /list - list of your subscriptions with the latest streamer’s information
       TEXT
-      expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_users([user])
+      expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
       post '/telegram/webhook', message_params.to_json, headers
     end

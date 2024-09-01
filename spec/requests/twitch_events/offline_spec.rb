@@ -17,7 +17,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
           .to change { streamer.channel_info[:status] }.from('online').to('offline')
       end
 
-      it 'it doesn\'t notify users' do
+      it 'it doesn\'t notify chats' do
         send_webhook_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)
@@ -32,7 +32,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         expect { send_webhook_request }.not_to(change { streamer.channel_info[:status] })
       end
 
-      it 'doesn\'t notify users' do
+      it 'doesn\'t notify chats' do
         send_webhook_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)
