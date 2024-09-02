@@ -6,6 +6,8 @@ module Chat::Subscriber
   included do
     has_many :chat_streamer_subscriptions, dependent: :destroy
     has_many :subscriptions, through: :chat_streamer_subscriptions, source: :streamer
+
+    scope :without_just_chatting_mode, -> { where(just_chatting_mode: false) }
   end
 
   def subscribed_to?(streamer_id) = subscriptions.exists?(streamer_id)

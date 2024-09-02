@@ -19,6 +19,10 @@ module TwitchEvents
       streamer.set_telegram_login_from_title
     end
 
+    def subscribers
+      category == 'Just Chatting' ? super : super.without_just_chatting_mode
+    end
+
     def values_unchanged?
       cached_category, cached_title = channel_info.values_at(:category, :title)
       return false unless cached_category && cached_title

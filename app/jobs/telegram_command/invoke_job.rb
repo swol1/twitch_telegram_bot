@@ -10,7 +10,8 @@ class TelegramCommand::InvokeJob
     'sub' => 'Subscribe',
     'unsub' => 'Unsubscribe',
     'unsub_all' => 'UnsubscribeAll',
-    'list' => 'List'
+    'list' => 'List',
+    'toggle_just_chatting_mode' => 'ToggleJustChattingMode'
   }.freeze
 
   def perform(params)

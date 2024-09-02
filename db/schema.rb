@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_31_135433) do
+ActiveRecord::Schema[7.1].define(version: 2024_09_02_213908) do
   create_table "chat_streamer_subscriptions", force: :cascade do |t|
     t.integer "chat_id", null: false
     t.integer "streamer_id", null: false
@@ -26,6 +26,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_31_135433) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "telegram_id", null: false
+    t.boolean "just_chatting_mode", default: false
     t.index ["telegram_id"], name: "index_chats_on_telegram_id", unique: true
   end
 
