@@ -39,6 +39,19 @@ RSpec.describe TelegramBotClient do
       expect(telegram_api).to have_received(:send_message).with(message)
     end
 
+    it 'sanitizes the message text before sending' do
+      allow(RateLimiter).to receive(:check).and_return(nil)
+      allow(telegram_api).to receive(:send_message)
+
+      raw_message = { chat_id: '123', text: 'Hello <b>World</b> @user <script>alert("xss")</script>' }
+      sanitized_message = { chat_id: '123',
+                            text: 'Hello <b>World</b> user &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;' }
+
+      client.send_message(raw_message)
+
+      expect(telegram_api).to have_received(:send_message).with(sanitized_message)
+    end
+
     context 'when a Telegram::Bot::Exceptions::ResponseError is raised' do
       it 'destroys the chat and logs the error' do
         chat = create(:chat, telegram_id: '123')
