@@ -42,7 +42,7 @@ COPY --from=build $APP_PATH $APP_PATH
 # Setup non-root user and set ownership
 RUN groupadd --system --gid 1000 twitch_telegram_bot && \
     useradd twitch_telegram_bot --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R twitch_telegram_bot:twitch_telegram_bot db log storage tmp
+    chown -R twitch_telegram_bot:twitch_telegram_bot db storage tmp
 USER 1000:1000
 
 ENTRYPOINT ["/twitch_telegram_bot/bin/docker-entrypoint"]
