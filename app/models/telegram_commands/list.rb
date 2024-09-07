@@ -17,7 +17,11 @@ module TelegramCommands
 
     def subscriptions_text
       subscribed_to = streamers.map { "<b>#{_1.login}</b>" }.join(', ')
-      I18n.t('streamer_subscription.info.subscribed_to', streamers: subscribed_to)
+      I18n.t(
+        'streamer_subscription.info.subscribed_to',
+        streamers: subscribed_to,
+        just_chatting_status: chat.just_chatting_status
+      )
     end
 
     def streamers_info_text

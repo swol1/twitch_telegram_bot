@@ -26,6 +26,9 @@ servers:
 volumes:
   - "/db:/twitch_telegram_bot/storage/db"
 
+# logging:
+#   driver: journald
+
 registry:
   server: registry.digitalocean.com/your_name
   username:

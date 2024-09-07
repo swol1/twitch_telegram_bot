@@ -20,6 +20,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         Example: <code>sub twitch</code>
 
         /list - list of your subscriptions with the latest streamer’s information
+        /toggle_just_chatting_mode - turn on/off Just Chatting mode. When enabled, you will only receive notifications if the streamer's category is set to <b>Just Chatting</b>. When disabled, you will receive all notifications.
       TEXT
       expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 

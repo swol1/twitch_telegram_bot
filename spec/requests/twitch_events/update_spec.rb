@@ -82,5 +82,33 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
           .to('my_tg_login')
       end
     end
+
+    context 'when chat has just chatting mode is on' do
+      it 'doesn\'t notify them if category is not Just Chatting' do
+        chat_with_jc_mode = create(:chat, just_chatting_mode: true, subscriptions: [streamer])
+        chat_without_jc_mode = create(:chat, subscriptions: [streamer])
+
+        send_webhook_request
+
+        expect(telegram_bot_client).not_to have_received(:send_message)
+          .with(hash_including(chat_id: chat_with_jc_mode.telegram_id))
+        expect(telegram_bot_client).to have_received(:send_message)
+          .with(hash_including(chat_id: chat_without_jc_mode.telegram_id))
+        expect(last_response.status).to eq(204)
+      end
+
+      it 'notifies all chats if category is Just Chatting' do
+        chat_with_jc_mode = create(:chat, just_chatting_mode: true, subscriptions: [streamer])
+        chat_without_jc_mode = create(:chat, subscriptions: [streamer])
+
+        post '/twitch/eventsub', params.deep_merge(event: { category_name: 'Just Chatting' }).to_json, headers
+
+        expect(telegram_bot_client).to have_received(:send_message)
+          .with(hash_including(chat_id: chat_with_jc_mode.telegram_id))
+        expect(telegram_bot_client).to have_received(:send_message)
+          .with(hash_including(chat_id: chat_without_jc_mode.telegram_id))
+        expect(last_response.status).to eq(204)
+      end
+    end
   end
 end

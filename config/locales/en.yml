@@ -9,6 +9,7 @@ en:
     Example: <code>sub twitch</code>
 
     /list - list of your subscriptions with the latest streamer’s information
+    /toggle_just_chatting_mode - turn on/off Just Chatting mode. When enabled, you will only receive notifications if the streamer's category is set to <b>Just Chatting</b>. When disabled, you will receive all notifications.
   errors:
     chat_not_subscribed: You were not subscribed to <b>%{login}</b>.
     generic: An internal error occurred. Please try again later.
@@ -24,6 +25,10 @@ en:
     Here's how you can interact with me:
 
     %{instructions}
+
+    Just Chatting Mode: <b>%{just_chatting_status}</b>
+  just_chatting_mode_off: Just Chatting Mode is <b>off</b>. You will receive all notifications.
+  just_chatting_mode_on: Just Chatting Mode is <b>on</b>. You will receive notifications only with category <b>Just Chatting</b>.
   streamer_notification:
     offline: |2-
 
@@ -39,7 +44,11 @@ en:
       category: 'Category: %{category}'
       not_available: "Data is not available yet 😢"
       not_subscribed: "You are not subscribed to any streamer yet 😢"
-      subscribed_to: "You are subscribed to: %{streamers}\n\n"
+      subscribed_to: |+
+        You are subscribed to: %{streamers}
+
+        Just Chatting Mode: <b>%{just_chatting_status}</b>
+
       title: 'Title: %{title}'
     subscribed_success: |-
       You have successfully subscribed to notifications from <b>%{name}</b>.

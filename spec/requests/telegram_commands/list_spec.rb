@@ -24,9 +24,12 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
           create(:streamer, login: "streamer_login_#{i}", name: "Streamer #{i}", twitch_id: i.to_s)
         end
         chat.subscriptions << streamers
+        chat.toggle!(:just_chatting_mode)
 
         expected_text = <<~TEXT.strip
           You are subscribed to: <b>streamer_login_1</b>, <b>streamer_login_2</b>
+
+          Just Chatting Mode: <b>on</b>
 
           Data is not available yet 😢
         TEXT
@@ -50,6 +53,8 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
         expected_text = <<~TEXT.strip
           You are subscribed to: <b>streamer_login_1</b>, <b>streamer_login_2</b>, <b>streamer_login_3</b>
+
+          Just Chatting Mode: <b>off</b>
 
           <b>Streamer 1</b> 🔴
           Category: Some Category

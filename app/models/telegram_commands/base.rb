@@ -21,7 +21,7 @@ module TelegramCommands
         chat_id: chat.telegram_id,
         disable_web_page_preview: true,
         parse_mode: :html,
-        text: text.html_safe
+        text:
       )
     end
 
