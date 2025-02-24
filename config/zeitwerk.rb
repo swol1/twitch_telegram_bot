@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 loader = Zeitwerk::Loader.new
-app_folders = %w[api jobs models]
+app_folders = %w[api jobs models presenters services]
 app_folders.each { |folder| loader.push_dir(App.root.join('app', folder)) }
 loader.push_dir(App.root.join('lib'))
 

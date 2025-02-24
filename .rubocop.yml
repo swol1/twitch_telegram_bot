@@ -31,6 +31,8 @@ Metrics/MethodLength:
   Max: 20
 Naming/MemoizedInstanceVariableName:
   EnforcedStyleForLeadingUnderscores: required
+Lint/MissingSuper:
+  Enabled: false
 
 RSpec:
   Enabled: false

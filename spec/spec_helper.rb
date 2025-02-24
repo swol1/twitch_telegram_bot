@@ -28,7 +28,7 @@ RSpec.configure do |config|
 
   config.include_context 'with default telegram setup', default_telegram_setup: true
   config.include_context 'with default twitch setup', default_twitch_setup: true
-  %i[request job].each do |type|
+  %i[request job service].each do |type|
     config.include_context('with stubbed telegram bot client', type:)
     config.include_context('with stubbed twitch api client', type:)
   end

@@ -6,19 +6,19 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   let(:params) { base_params }
   let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'stream.offline') }
 
-  subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
+  subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
   describe 'POST channel.offline event' do
     context 'when status changed' do
       before { streamer.channel_info[:status] = 'online' }
 
       it 'updates streamer data' do
-        expect { send_webhook_request }
+        expect { send_request }
           .to change { streamer.channel_info[:status] }.from('online').to('offline')
       end
 
       it 'it doesn\'t notify chats' do
-        send_webhook_request
+        send_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)
         expect(last_response.status).to eq(204)
@@ -29,11 +29,11 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       before { streamer.channel_info[:status] = 'offline' }
 
       it 'doesn\'t update streamer data' do
-        expect { send_webhook_request }.not_to(change { streamer.channel_info[:status] })
+        expect { send_request }.not_to(change { streamer.channel_info[:status] })
       end
 
       it 'doesn\'t notify chats' do
-        send_webhook_request
+        send_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)
         expect(last_response.status).to eq(204)

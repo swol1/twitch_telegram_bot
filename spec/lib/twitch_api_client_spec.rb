@@ -7,6 +7,12 @@ RSpec.describe TwitchApiClient do
   let(:base_url) { TwitchApiClient::BASE_TWITCH_API_URL }
   let(:token_url) { TwitchApiClient::BASE_TWITCH_TOKEN_URL }
   let(:access_token) { 'mocked_access_token' }
+  let(:headers) do
+    {
+      'Authorization' => "Bearer #{access_token}",
+      'Client-Id' => App.secrets.twitch_client_id
+    }
+  end
 
   before do
     stub_request(:post, token_url)
@@ -18,11 +24,7 @@ RSpec.describe TwitchApiClient do
     it 'makes the correct POST request to subscribe to an event' do
       stub_request(:post, "#{base_url}/eventsub/subscriptions")
         .with(
-          headers: {
-            'Authorization' => "Bearer #{access_token}",
-            'Client-Id' => App.secrets.twitch_client_id,
-            'Content-Type' => 'application/json'
-          },
+          headers: headers.merge('Content-Type' => 'application/json'),
           body: {
             type: 'stream.online',
             version: '1',
@@ -45,12 +47,7 @@ RSpec.describe TwitchApiClient do
   describe '#get_streamer' do
     it 'makes the correct GET request to retrieve a streamer' do
       stub_request(:get, "#{base_url}/users?login=testuser")
-        .with(
-          headers: {
-            'Authorization' => "Bearer #{access_token}",
-            'Client-Id' => App.secrets.twitch_client_id
-          }
-        )
+        .with(headers:)
         .to_return(status: 200, body: { data: [{ id: '12345', login: 'testuser' }] }.to_json)
 
       response = client.get_streamer('testuser')
@@ -63,12 +60,7 @@ RSpec.describe TwitchApiClient do
   describe '#get_channel_info' do
     it 'makes the correct GET request to retrieve channel information' do
       stub_request(:get, "#{base_url}/channels?broadcaster_id=12345")
-        .with(
-          headers: {
-            'Authorization' => "Bearer #{access_token}",
-            'Client-Id' => App.secrets.twitch_client_id
-          }
-        )
+        .with(headers:)
         .to_return(status: 200, body: { data: [{ id: '12345', broadcaster_name: 'testuser' }] }.to_json)
 
       response = client.get_channel_info('12345')
@@ -81,12 +73,7 @@ RSpec.describe TwitchApiClient do
   describe '#get_all_app_subscriptions' do
     it 'makes the correct GET request to retrieve all app subscriptions' do
       stub_request(:get, "#{base_url}/eventsub/subscriptions")
-        .with(
-          headers: {
-            'Authorization' => "Bearer #{access_token}",
-            'Client-Id' => App.secrets.twitch_client_id
-          }
-        )
+        .with(headers:)
         .to_return(status: 200, body: { data: [] }.to_json)
 
       response = client.get_all_app_subscriptions
@@ -99,12 +86,7 @@ RSpec.describe TwitchApiClient do
   describe '#delete_subscription_to_event' do
     it 'makes the correct DELETE request to remove an event subscription' do
       stub_request(:delete, "#{base_url}/eventsub/subscriptions?id=subscription_id")
-        .with(
-          headers: {
-            'Authorization' => "Bearer #{access_token}",
-            'Client-Id' => App.secrets.twitch_client_id
-          }
-        )
+        .with(headers:)
         .to_return(status: 204)
 
       response = client.delete_subscription_to_event('subscription_id')

@@ -13,14 +13,14 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   end
   let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'channel.update') }
 
-  subject(:send_webhook_request) { post '/twitch/eventsub', params.to_json, headers }
+  subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
   describe 'POST channel.update event' do
     context 'when values changed' do
       before { streamer.channel_info.update(title: 'title', category: 'category') }
 
       it 'updates streamer data' do
-        expect { send_webhook_request }
+        expect { send_request }
           .to change { streamer.reload.telegram_login }.from(nil).to('my_tg_login')
           .and change { streamer.channel_info[:title] }.from('title').to('some_title t.me/my_tg_login')
           .and change { streamer.channel_info[:category] }.from('category').to('some_category')
@@ -50,7 +50,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
           }
         ).to_chats(chats)
 
-        send_webhook_request
+        send_request
 
         expect(last_response.status).to eq(204)
       end
@@ -60,14 +60,14 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       before { streamer.channel_info.update(title: 'some_title t.me/my_tg_login', category: 'some_category') }
 
       it 'doesn\'t update streamer data' do
-        expect { send_webhook_request }
+        expect { send_request }
           .to not_change { streamer.reload.telegram_login }
           .and not_change { streamer.channel_info[:title] }
           .and(not_change { streamer.channel_info[:category] })
       end
 
       it 'doesn\'t notify chats' do
-        send_webhook_request
+        send_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)
         expect(last_response.status).to eq(204)
@@ -77,7 +77,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
     context 'when telegram login already set' do
       it "doesn't update telegram login" do
         streamer.update(telegram_login: 'other_login')
-        expect { send_webhook_request }.to change { streamer.reload.telegram_login }
+        expect { send_request }.to change { streamer.reload.telegram_login }
           .from('other_login')
           .to('my_tg_login')
       end
@@ -88,7 +88,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         chat_with_jc_mode = create(:chat, just_chatting_mode: true, subscriptions: [streamer])
         chat_without_jc_mode = create(:chat, subscriptions: [streamer])
 
-        send_webhook_request
+        send_request
 
         expect(telegram_bot_client).not_to have_received(:send_message)
           .with(hash_including(chat_id: chat_with_jc_mode.telegram_id))

@@ -8,6 +8,7 @@ RSpec.shared_context 'with stubbed twitch api client' do
     allow(twitch_api_client).to receive(:get_channel_info).and_return(success_response)
     allow(twitch_api_client).to receive(:get_streamer).and_return(success_response)
     allow(twitch_api_client).to receive(:subscribe_to_event).and_return(success_response)
+    allow(twitch_api_client).to receive(:delete_subscription_to_event).and_return({ status: '204', body: {} })
   end
 
   def success_response(**body)

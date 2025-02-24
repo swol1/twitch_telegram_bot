@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 class Streamer < ActiveRecord::Base
-  include ChannelInfo, EventSubscriptions
+  include ChannelInfo
 
   has_many :chat_streamer_subscriptions, dependent: :destroy
   has_many :subscribers, through: :chat_streamer_subscriptions, source: :chat
+  has_many :event_subscriptions, primary_key: 'twitch_id', foreign_key: 'streamer_twitch_id'
 
   validates :login, presence: true, uniqueness: true
   validates :name, presence: true
@@ -13,18 +14,11 @@ class Streamer < ActiveRecord::Base
 
   default_scope { order('LOWER(name)') }
 
-  class << self
-    def find_or_create_from_twitch(login)
-      find_by(login:) || create_from_twitch!(login)
-    end
-
-    def create_from_twitch!(login)
-      Streamer::Twitch::Data.new(login).create_streamer!.tap do |streamer|
-        streamer.update_channel_info_from_twitch
-        streamer.subscribe_to_twitch_events
-      end
-    end
+  def pending_events
+    event_subscriptions.pending
   end
 
-  def info = Streamer::Info.new(self)
+  def enabled_events
+    event_subscriptions.enabled
+  end
 end
