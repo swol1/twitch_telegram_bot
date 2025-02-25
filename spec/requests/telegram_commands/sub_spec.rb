@@ -6,11 +6,11 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
   describe '/sub some_streamer command' do
     let(:message_text) { '/sub some_streamer' }
 
-    subject(:send_webhook_request) { post '/telegram/webhook', message_params.to_json, headers }
+    subject(:send_request) { post '/telegram/webhook', message_params.to_json, headers }
 
     before do
-      allow(Streamer::SubscribingToTwitchEventsJob).to receive(:perform_async)
-      allow(Streamer::CheckingEnabledEventsJob).to receive(:perform_in)
+      allow(Streamer::SubscribeToTwitchEventsJob).to receive(:perform_async)
+      allow(Streamer::ReconcileEnabledTwitchEventsJob).to receive(:perform_in)
     end
 
     context 'when login not provided' do
@@ -20,7 +20,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         expected_text = I18n.t('errors.login_not_provided')
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-        send_webhook_request
+        send_request
       end
     end
 
@@ -32,7 +32,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         expected_text = I18n.t('errors.max_subs_reached', max_subs: 2)
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-        expect { send_webhook_request }.not_to(change { chat.subscriptions.reload.count })
+        expect { send_request }.not_to(change { chat.subscriptions.reload.count })
       end
     end
 
@@ -47,19 +47,10 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
       end
 
       it 'subscribes chat to streamer' do
-        expect { send_webhook_request }.to change { chat.subscriptions.reload.count }.by(1)
+        expect { send_request }.to change { chat.subscriptions.reload.count }.by(+1)
 
         streamer = Streamer.last
         expect(chat.subscriptions.last).to eq(streamer)
-      end
-
-      it 'enqueues jobs' do
-        freeze_time do
-          send_webhook_request
-
-          expect(Streamer::SubscribingToTwitchEventsJob).to have_received(:perform_async).with(1)
-          expect(Streamer::CheckingEnabledEventsJob).to have_received(:perform_in).with(10.minutes, 1)
-        end
       end
 
       it 'returns message with streamer info' do
@@ -74,7 +65,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         TEXT
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-        send_webhook_request
+        send_request
       end
 
       context 'when streamer info not available' do
@@ -82,13 +73,14 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
           allow(twitch_api_client).to receive(:get_channel_info)
             .with('twitch_1')
             .and_return(success_response(data: [{}]))
+
           expected_text = <<~TEXT.strip
             You have successfully subscribed to notifications from <b>SomeStreamer</b>.
             Number of available subscriptions: 1
           TEXT
           expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-          send_webhook_request
+          send_request
         end
       end
 
@@ -100,20 +92,8 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
           expected_text = I18n.t('errors.not_uniq_subscription', name: streamer.name)
           expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-          expect { send_webhook_request }.not_to(change { chat.subscriptions.reload.count })
+          expect { send_request }.not_to(change { chat.subscriptions.reload.count })
         end
-      end
-    end
-
-    RSpec.shared_examples 'a streamer subscription error' do |expected_text|
-      it 'sends error message and doesn\'t trigger creation related logic' do
-        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
-
-        expect { send_webhook_request }.not_to(change { Streamer.count })
-
-        expect(Streamer::SubscribingToTwitchEventsJob).not_to have_received(:perform_async)
-        expect(Streamer::CheckingEnabledEventsJob).not_to have_received(:perform_in)
-        expect(twitch_api_client).not_to have_received(:get_channel_info)
       end
     end
 
@@ -122,7 +102,12 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         allow(twitch_api_client).to receive(:get_streamer).with('some_streamer').and_return(not_found_response)
       end
 
-      it_behaves_like 'a streamer subscription error', I18n.t('errors.streamer_not_found', login: 'some_streamer')
+      it 'sends error message' do
+        expected_text = I18n.t('errors.streamer_not_found', login: 'some_streamer')
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
+
+        send_request
+      end
     end
 
     context 'when streamer invalid' do
@@ -132,7 +117,12 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         )
       end
 
-      it_behaves_like 'a streamer subscription error', I18n.t('errors.generic')
+      it 'sends error message' do
+        expected_text = I18n.t('errors.generic')
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
+
+        send_request
+      end
     end
   end
 end

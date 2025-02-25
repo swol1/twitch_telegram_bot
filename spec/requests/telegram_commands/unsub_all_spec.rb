@@ -9,7 +9,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
     it 'unsubscribes from all streamers' do
       %w[some_streamer some_streamer_2].each do |login|
         streamer = create(:streamer, login:)
-        chat.subscribe_to(streamer)
+        chat.subscriptions << streamer
       end
 
       expected_text = I18n.t('streamer_subscription.unsubscribed_all')

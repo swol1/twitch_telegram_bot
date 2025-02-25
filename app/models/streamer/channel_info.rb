@@ -12,10 +12,6 @@ module Streamer::ChannelInfo
                 after_change: lambda(&:expire_channel_info)
   end
 
-  def update_channel_info_from_twitch
-    Streamer::Twitch::ChannelInfo.new(self).update_streamer_channel_info
-  end
-
   def expire_channel_info
     Kredis.redis.expire(channel_info.key, STREAMER_ID_TTL)
   end

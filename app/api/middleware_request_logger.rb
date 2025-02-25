@@ -2,28 +2,22 @@
 
 class MiddlewareRequestLogger < GrapeLogging::Middleware::RequestLogger
   def initialize(app, options = {})
-    options = options.presence || {
+    default_options = {
       logger: App.logger,
       log_level: App.env.production? ? 'info' : 'debug',
-      formatter: if App.env.production?
-                   GrapeLogging::Formatters::Json.new
-                 else
-                   GrapeLogging::Formatters::Default.new
-                 end,
+      formatter: App.env.production? ? GrapeLogging::Formatters::Json.new : GrapeLogging::Formatters::Default.new,
       include: [
         GrapeLogging::Loggers::Response.new,
         GrapeLogging::Loggers::RequestHeaders.new
       ]
     }
-    super
+    super(app, default_options.merge(options))
   end
 
-  # silence logs for healthcheck
+  # silence logging for healthcheck
   def call(env)
-    if env['PATH_INFO'] == '/up'
-      @app.call(env)
-    else
-      super
-    end
+    return @app.call(env) if env['PATH_INFO'] == '/up'
+
+    super
   end
 end

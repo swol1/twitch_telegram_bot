@@ -76,12 +76,11 @@ class TwitchWebhook < Grape::API
       status 200
       body params['challenge']
     when MESSAGE_TYPE_NOTIFICATION
-      TwitchEvent::ProcessJob.perform_async(event_params)
+      HandleTwitchEventJob.perform_async(event_params)
       return_no_content
     when MESSAGE_TYPE_REVOCATION
+      # maybe notify chats that sub was revoked
       event_subscription.revoked!
-      streamer = event_subscription.streamer
-      streamer.destroy if streamer.event_subscriptions.all?(&:revoked?)
 
       App.logger.log_error(nil, "Event Revoked: #{event_subscription.inspect}")
       return_no_content

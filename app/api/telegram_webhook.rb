@@ -62,7 +62,7 @@ class TelegramWebhook < Grape::API
     if params[:my_chat_member]
       handle_chat_member_status
     elsif can_use_bot?
-      TelegramCommand::InvokeJob.perform_async(params.to_json)
+      HandleTelegramCommandJob.perform_async(params.to_json)
     else
       locale = (I18n.available_locales & [params[:message][:from][:language_code]&.to_sym]).first || I18n.default_locale
       TelegramBotClient.new.send_message(

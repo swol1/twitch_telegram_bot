@@ -19,9 +19,8 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
     context 'when webhook_callback_verification' do
       let(:message_type) { 'webhook_callback_verification' }
-
-      it 'verifies the subscription and returns the challenge' do
-        params = {
+      let(:params) do
+        {
           challenge: 'pogchamp-kappa-360noscope-vohiyo',
           subscription: {
             id: event_subscription.twitch_id,
@@ -32,8 +31,10 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
             }
           }
         }
+      end
 
-        expect { post '/twitch/eventsub', params.to_json, headers }
+      it 'verifies the subscription and returns the challenge' do
+        expect { send_request }
           .to change { event_subscription.reload.status }.from('pending').to('enabled')
 
         expect(last_response.status).to eq(200)
@@ -48,17 +49,6 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         event_subscription.enabled!
 
         expect { send_request }.to change { event_subscription.reload.status }.from('enabled').to('revoked')
-        expect(last_response.status).to eq(204)
-      end
-
-      it 'destroy streamer if all subscriptions revoked' do
-        streamer.event_subscriptions.each(&:revoked!)
-        event_subscription.enabled!
-
-        expect(twitch_api_client).not_to receive(:delete_subscription_to_event)
-        expect { send_request }
-          .to change { Streamer.count }.by(-1)
-          .and change { EventSubscription.count }.by(-3)
         expect(last_response.status).to eq(204)
       end
     end
@@ -80,14 +70,14 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       let(:message_type) { 'notification' }
 
       it 'returns a 422 status' do
-        allow(TwitchEvent::ProcessJob).to receive(:perform_async)
+        allow(HandleTwitchEventJob).to receive(:perform_async)
         event_subscription.destroy
 
         send_request
 
         expect(last_response.status).to eq(422)
         expect(last_response.body).to include('Invalid event subscription')
-        expect(TwitchEvent::ProcessJob).not_to have_received(:perform_async)
+        expect(HandleTwitchEventJob).not_to have_received(:perform_async)
       end
     end
 
@@ -95,11 +85,11 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       let(:message_type) { 'notification' }
 
       it 'returns a 500 status and logs the error' do
-        allow(TwitchEvent::ProcessJob).to receive(:perform_async).and_raise(StandardError.new('test error'))
+        allow(HandleTwitchEventJob).to receive(:perform_async).and_raise(StandardError.new('test error'))
 
         expect(App.logger).to receive(:log_error).with(instance_of(StandardError), 'Twitch webhook error')
 
-        post '/twitch/eventsub', params.to_json, headers
+        send_request
 
         expect(last_response.status).to eq(500)
         expect(last_response.body).to include('Internal server error')

@@ -59,7 +59,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
     end
 
     context 'when max chat limit is reached' do
-      before { allow(TelegramCommand::InvokeJob).to receive(:perform_async) }
+      before { allow(HandleTelegramCommandJob).to receive(:perform_async) }
 
       it 'does not invoke command and sends error response' do
         create(:chat)
@@ -71,7 +71,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
         post '/telegram/webhook', updated_message_params.to_json, headers
 
-        expect(TelegramCommand::InvokeJob).not_to have_received(:perform_async)
+        expect(HandleTelegramCommandJob).not_to have_received(:perform_async)
         expect(telegram_bot_client).to have_received(:send_message)
           .with({ chat_id: 123_456_789, text: I18n.t('errors.max_chats_reached', locale: :ru) })
       end
@@ -83,7 +83,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
         post '/telegram/webhook', message_params.to_json, headers
 
-        expect(TelegramCommand::InvokeJob).to have_received(:perform_async)
+        expect(HandleTelegramCommandJob).to have_received(:perform_async)
       end
     end
   end

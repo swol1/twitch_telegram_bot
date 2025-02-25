@@ -6,7 +6,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
   describe '/list command' do
     let(:message_text) { '/list' }
 
-    subject(:send_webhook_request) { post '/telegram/webhook', message_params.to_json, headers }
+    subject(:send_request) { post '/telegram/webhook', message_params.to_json, headers }
 
     context 'when chat has no subscriptions' do
       it 'doesn\'t send message' do
@@ -14,7 +14,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
 
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-        send_webhook_request
+        send_request
       end
     end
 
@@ -35,7 +35,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         TEXT
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-        send_webhook_request
+        send_request
       end
     end
 
@@ -68,7 +68,7 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
         TEXT
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
-        send_webhook_request
+        send_request
       end
     end
   end
