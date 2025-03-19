@@ -7,7 +7,7 @@ RSpec.describe 'destroy_unused_streamers task' do
   include_context 'with stubbed twitch api client'
 
   before(:all) do
-    custom_rake_path = File.expand_path('../../rake', __dir__)
+    custom_rake_path = File.expand_path('../../lib/tasks', __dir__)
     Rake.application.rake_require('destroy_unused_streamers', [custom_rake_path])
     Rake::Task.define_task(:environment)
   end
