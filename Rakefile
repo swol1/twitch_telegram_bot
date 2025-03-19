@@ -1,21 +1,20 @@
 #!/usr/bin/env rake
 # frozen_string_literal: true
 
+ENV['RACK_ENV'] ||= 'development'
 require 'bundler/setup'
 
-ENV['RACK_ENV'] ||= 'development'
-
 begin
-  Bundler.setup :default, ENV.fetch('RACK_ENV')
+  Bundler.setup(:default, ENV.fetch('RACK_ENV'))
 rescue Bundler::BundlerError => e
   warn e.message
-  warn 'Run `bundle install` to install missing gems'
+  warn 'Run bundle install to install missing gems'
   exit e.status_code
 end
 
 require 'rake'
 
-Dir.glob(File.join(__dir__, 'rake', '**', '*.rb')).each(&method(:require))
+Dir.glob('lib/tasks/**/*.rake').each { import _1 }
 
 task :environment do
   require File.expand_path('config/environment.rb', __dir__)
@@ -25,7 +24,7 @@ desc 'Lists all of the routes'
 task routes: :environment do
   Root.routes.each do |route|
     method = route.request_method.ljust(10)
-    path = route.origin
+    path   = route.origin
     puts "      #{method} #{path}"
   end
 end
