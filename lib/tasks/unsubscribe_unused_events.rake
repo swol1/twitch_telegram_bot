@@ -5,6 +5,8 @@ task unsubscribe_unused_events: :environment do
   twitch_api_client = TwitchApiClient.new
   all_subscriptions = twitch_api_client.get_all_app_subscriptions
   removed_count = 0
+  # checking each record is not efficient, but the number of records is small
+  # maybe improve this in the future
   all_subscriptions[:body][:data].each do |s|
     next if EventSubscription.exists?(twitch_id: s[:id])
     next if s[:status] == 'webhook_callback_verification_pending'

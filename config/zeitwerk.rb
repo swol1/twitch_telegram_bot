@@ -5,6 +5,9 @@ app_folders = %w[api jobs models presenters services]
 app_folders.each { |folder| loader.push_dir(App.root.join('app', folder)) }
 loader.push_dir(App.root.join('lib'))
 
+loader.collapse(App.root.join('app', 'api', 'concerns'))
+loader.collapse(App.root.join('app', 'api', 'middleware'))
+
 loader.enable_reloading if App.env.development?
 loader.logger = nil # method(:puts) if App.env.development?
 loader.setup
