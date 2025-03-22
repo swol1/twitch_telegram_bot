@@ -6,6 +6,7 @@ if App.secrets.sentry_dsn.present?
     config.breadcrumbs_logger = %i[sentry_logger monotonic_active_support_logger http_logger]
     config.profiles_sample_rate = 1.0
     config.background_worker_threads = 1
+    config.send_default_pii = true
 
     config.traces_sampler = lambda do |sampling_context|
       next sampling_context[:parent_sampled] unless sampling_context[:parent_sampled].nil?

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class Root < Grape::API
-  insert_before Grape::Middleware::Error, MiddlewareRequestLogger
+  use IgnoreBadRequestsMiddleware
+  insert_before Grape::Middleware::Error, RequestLoggerMiddleware
   include SentryTracing
 
   helpers do
