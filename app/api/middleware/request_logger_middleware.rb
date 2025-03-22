@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class MiddlewareRequestLogger < GrapeLogging::Middleware::RequestLogger
+class RequestLoggerMiddleware < GrapeLogging::Middleware::RequestLogger
   def initialize(app, options = {})
     default_options = {
       logger: App.logger,
