@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# spec/services/streamer/create_from_twitch_spec.rb
-
 require 'spec_helper'
 
 RSpec.describe Streamer::CreateFromTwitch, type: :service do
@@ -46,9 +44,31 @@ RSpec.describe Streamer::CreateFromTwitch, type: :service do
     end
   end
 
-  context 'when Streamer.create! fails' do
+  context 'when streamer already exists' do
+    let!(:streamer) { create(:streamer, login: 'old_login', twitch_id: 'twitch_123', name: 'Old Name') }
+
+    it 'updates the existing streamer attributes without enqueuing jobs' do
+      updated_data = { login: 'new_login', id: 'twitch_123', display_name: 'New Name' }
+      allow(twitch_api_client).to receive(:get_streamer).with(login)
+                                                        .and_return(success_response(data: [updated_data]))
+      allow(Streamer::UpdateInfo).to receive(:call)
+
+      result = subject.call
+
+      expect(result.id).to eq(streamer.id)
+      expect(streamer.reload.login).to eq('new_login')
+      expect(streamer.reload.name).to eq('New Name')
+      expect(Streamer::UpdateInfo).not_to have_received(:call)
+      expect(Streamer::SubscribeToTwitchEventsJob).not_to have_enqueued_sidekiq_job
+      expect(Streamer::ReconcileEnabledTwitchEventsJob).not_to have_enqueued_sidekiq_job
+    end
+  end
+
+  context 'when streamer.save! fails' do
+    let!(:streamer) { create(:streamer, streamer_data.tap { _1.delete(:display_name) }) }
+
     it 'raises an ActiveRecord::RecordInvalid error and does not enqueue any jobs' do
-      allow(Streamer).to receive(:create!).and_raise(ActiveRecord::RecordInvalid.new(Streamer.new))
+      allow(streamer).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(Streamer.new))
 
       expect { subject.call }.to raise_error(ActiveRecord::RecordInvalid)
       expect(Streamer::UpdateInfo).not_to have_received(:call)
