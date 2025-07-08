@@ -12,6 +12,8 @@ class Streamer < ActiveRecord::Base
   validates :twitch_id, presence: true, uniqueness: true
   validates :telegram_login, uniqueness: true, allow_blank: true
 
+  kredis_string :name_with_emoji, key: ->(s) { "streamer_name:#{s.twitch_id}" }
+
   default_scope { order('LOWER(name)') }
 
   def pending_events

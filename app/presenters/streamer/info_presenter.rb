@@ -7,7 +7,9 @@ class Streamer::InfoPresenter
     @streamer = streamer
   end
 
-  def name_with_emoji = "<b>#{@streamer.name}</b>".append_emoji
+  def name_with_emoji
+    @streamer.name_with_emoji.value ||= "<b>#{@streamer.name}</b>".append_emoji
+  end
 
   def to_text(*args)
     args = %i[name category title twitch telegram] if args.blank?
