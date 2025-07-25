@@ -9,16 +9,16 @@ FactoryBot.define do
 
     trait :with_enabled_subscriptions do
       after(:create) do |streamer|
-        EventSubscription::TYPES.each do |event_type, version|
-          create(:event_subscription, streamer:, event_type:, version:, status: :enabled)
+        EventSubscription::TYPES.each do |event_type|
+          create(:event_subscription, streamer:, event_type:, status: :enabled)
         end
       end
     end
 
     trait :with_pending_subscriptions do
       after(:create) do |streamer|
-        EventSubscription::TYPES.each do |event_type, version|
-          create(:event_subscription, streamer:, event_type:, version:)
+        EventSubscription::TYPES.each do |event_type|
+          create(:event_subscription, streamer:, event_type:)
         end
       end
     end

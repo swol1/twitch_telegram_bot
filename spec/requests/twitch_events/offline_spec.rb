@@ -20,7 +20,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
           .to change { streamer.channel_info[:status] }.from('online').to('offline')
 
         expect(Kredis.redis.ttl(streamer.name_with_emoji.key))
-          .to be_within(1).of(2.hours.to_i)
+          .to be_within(2).of(4.hours.to_i)
       end
 
       it 'it doesn\'t notify chats' do

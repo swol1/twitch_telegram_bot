@@ -38,7 +38,7 @@ RSpec.describe TwitchApiClient do
         )
         .to_return(status: 202, body: {}.to_json)
 
-      client.subscribe_to_event('12345', 'stream.online', '1')
+      client.subscribe_to_event({ broadcaster_user_id: '12345' }, 'stream.online', '1')
 
       expect(WebMock).to have_requested(:post, "#{base_url}/eventsub/subscriptions").once
     end

@@ -25,7 +25,7 @@ RSpec.describe 'destroy_unused_streamers task' do
       expect(App.logger).to receive(:log_error)
         .with(nil, a_string_including("Streamer #{streamer.id} was not destroyed: pending event subscriptions exist"))
       expect { task.invoke }.not_to(change { Streamer.count })
-      expect(EventSubscription.where(streamer_twitch_id:).count).to eq(3)
+      expect(EventSubscription.where(streamer_twitch_id:).count).to eq(EventSubscription::TYPES.size)
     end
   end
 
@@ -38,7 +38,7 @@ RSpec.describe 'destroy_unused_streamers task' do
 
       expect { task.invoke }
         .to change { Streamer.count }.by(-1)
-        .and change { EventSubscription.where(streamer_twitch_id:).count }.from(3).to(0)
+        .and change { EventSubscription.where(streamer_twitch_id:).count }.from(EventSubscription::TYPES.size).to(0)
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe 'destroy_unused_streamers task' do
       expect(twitch_api_client).not_to receive(:delete_subscription_to_event)
       expect { task.invoke }
         .to change { Streamer.count }.by(-1)
-        .and change { EventSubscription.where(streamer_twitch_id:).count }.from(3).to(0)
+        .and change { EventSubscription.where(streamer_twitch_id:).count }.from(EventSubscription::TYPES.size).to(0)
     end
   end
 end

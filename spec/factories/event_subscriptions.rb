@@ -2,10 +2,10 @@
 
 FactoryBot.define do
   factory :event_subscription do
-    sequence(:streamer_twitch_id) { |n| "twitch_#{n}" }
-    event_type { 'channel.update' }
-    version { '2' }
-    status { :pending }
+    streamer
+    event_type { EventSubscription::TYPES.first }
+    version { EventSubscription.config_for(event_type)[:version] }
+    status    { :pending }
     twitch_id { SecureRandom.uuid }
   end
 end

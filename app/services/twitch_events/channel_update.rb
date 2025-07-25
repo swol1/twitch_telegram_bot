@@ -11,8 +11,8 @@ module TwitchEvents
 
     private
 
-    def category = @event.category
-    def title = @event.title
+    def category = @twitch_event.payload['category_name']
+    def title = @twitch_event.payload['title']
 
     def update_streamer_info
       channel_info.update(category:, title:)
@@ -31,9 +31,8 @@ module TwitchEvents
     end
 
     def text_with_locales
-      name = Streamer::InfoPresenter.new(streamer).name_with_emoji
       I18n.with_all_locales do
-        text = I18n.t('streamer_notification.update', name:, category:, title:)
+        text = I18n.t('streamer_notification.update', streamer_name:, category:, title:)
         text += I18n.t('streamer_notification.offline') if channel_info.to_h.fetch(:status, 'offline') == 'offline'
         text
       end
