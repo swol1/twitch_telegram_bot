@@ -14,12 +14,13 @@ module TwitchEvents
     private
 
     def stream_restarted?
-      @event.secs_since_prev_status_event < 30
+      @event.secs_since_prev_status_event < 60
     end
 
     def update_channel_info
       channel_info[:status] = 'online'
       channel_info[:status_received_at] = @event.received_at
+      Kredis.redis.persist(streamer.name_with_emoji.key)
     end
 
     def text_with_locales

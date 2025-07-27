@@ -34,7 +34,7 @@ module TwitchEvents
       name = Streamer::InfoPresenter.new(streamer).name_with_emoji
       I18n.with_all_locales do
         text = I18n.t('streamer_notification.update', name:, category:, title:)
-        text += I18n.t('streamer_notification.offline') if channel_info[:status] == 'offline'
+        text += I18n.t('streamer_notification.offline') if channel_info.to_h.fetch(:status, 'offline') == 'offline'
         text
       end
     end

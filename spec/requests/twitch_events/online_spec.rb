@@ -11,13 +11,19 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   describe 'POST channel.online event' do
     context 'when status changed' do
       before do
-        streamer.channel_info[:status_received_at] = (Time.current - 31.seconds).iso8601
+        streamer.channel_info[:status_received_at] = (Time.current - 61.seconds).iso8601
         streamer.channel_info[:status] = 'offline'
       end
 
-      it 'updates streamer data' do
+      it 'updates streamer data and removes name_with_emoji expiration' do
+        streamer.name_with_emoji.value = 'Test 🎉'
+        Kredis.redis.expire(streamer.name_with_emoji.key, 2.hours)
+        expect(Kredis.redis.ttl(streamer.name_with_emoji.key)).to be > 0
+
         expect { send_request }
           .to change { streamer.channel_info[:status] }.from('offline').to('online')
+
+        expect(Kredis.redis.ttl(streamer.name_with_emoji.key)).to eq(-1)
       end
 
       it 'notifies subscribers' do
@@ -45,7 +51,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
     context 'when stream restarted' do
       before do
-        streamer.channel_info[:status_received_at] = (Time.current - 20.seconds).iso8601
+        streamer.channel_info[:status_received_at] = (Time.current - 50.seconds).iso8601
         streamer.channel_info[:status] = 'offline'
       end
 
