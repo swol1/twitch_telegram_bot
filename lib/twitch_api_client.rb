@@ -11,12 +11,12 @@ class TwitchApiClient
     @callback_url = "#{App.secrets.public_api_url}/twitch/eventsub"
   end
 
-  def subscribe_to_event(streamer_id, type, version)
+  def subscribe_to_event(condition, type, version)
     uri = URI("#{BASE_TWITCH_API_URL}/eventsub/subscriptions")
     body = {
       type:,
       version:,
-      condition: { broadcaster_user_id: streamer_id },
+      condition:,
       transport: {
         method: 'webhook',
         callback: @callback_url,

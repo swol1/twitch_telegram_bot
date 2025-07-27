@@ -17,7 +17,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
   describe 'POST channel.update event' do
     context 'when values changed' do
-      before { streamer.channel_info.update(title: 'title', category: 'category') }
+      before { streamer.channel_info.update(title: 'title', category: 'category', status: 'online') }
 
       it 'updates streamer data' do
         expect { send_request }

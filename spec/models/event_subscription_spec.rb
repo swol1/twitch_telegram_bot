@@ -7,7 +7,7 @@ RSpec.describe EventSubscription, type: :model do
     subject { create(:event_subscription) }
 
     it { is_expected.to validate_presence_of(:event_type) }
-    it { is_expected.to validate_inclusion_of(:event_type).in_array(EventSubscription::TYPES.keys) }
+    it { is_expected.to validate_inclusion_of(:event_type).in_array(EventSubscription::TYPES) }
     it do
       is_expected.to validate_uniqueness_of(:event_type)
         .scoped_to(:streamer_twitch_id)

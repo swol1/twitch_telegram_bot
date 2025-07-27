@@ -30,13 +30,17 @@ en:
   just_chatting_mode_off: Just Chatting Mode is <b>off</b>. You will receive all notifications.
   just_chatting_mode_on: Just Chatting Mode is <b>on</b>. You will receive notifications only with category <b>Just Chatting</b>.
   streamer_notification:
+    info_update: |-
+      %{old_name} has changed their information:
+      Login: %{login}
+      Name: %{name}
     offline: |2-
 
 
       The streamer might be offline
-    online: "%{name} is online"
+    online: "%{streamer_name} is online"
     update: |-
-      %{name}
+      %{streamer_name}
       Category: %{category}
       Title: %{title}
   streamer_subscription:

@@ -17,7 +17,7 @@ RSpec.describe Streamer::SubscribeToTwitchEvents, type: :service do
 
     it 'returns early and does not call the external API' do
       result = subject.call
-      expect(result).to be_nil
+      expect(result).to eq([])
       expect(twitch_api_client).not_to have_received(:subscribe_to_event)
     end
   end
@@ -32,8 +32,8 @@ RSpec.describe Streamer::SubscribeToTwitchEvents, type: :service do
 
     it 'enables pending events' do
       expect { subject.call }
-        .to change { streamer.event_subscriptions.pending.reload.count }.from(3).to(0)
-        .and change { streamer.event_subscriptions.enabled.reload.count }.from(0).to(3)
+        .to change { streamer.event_subscriptions.pending.reload.count }.from(EventSubscription::TYPES.size).to(0)
+        .and change { streamer.event_subscriptions.enabled.reload.count }.from(0).to(EventSubscription::TYPES.size)
     end
   end
 
@@ -52,12 +52,14 @@ RSpec.describe Streamer::SubscribeToTwitchEvents, type: :service do
         .and_return(
           success_response(data: [{ id: SecureRandom.uuid }]),
           success_response(data: [{ id: SecureRandom.uuid }]),
+          success_response(data: [{ id: SecureRandom.uuid }]),
           success_response(data: [{ id: SecureRandom.uuid }])
         )
     end
 
     it 'creates event subscriptions' do
-      expect { subject.call }.to change { streamer.event_subscriptions.pending.count }.from(0).to(3)
+      expect { subject.call }.to change { streamer.event_subscriptions.pending.count }
+        .from(0).to(EventSubscription::TYPES.size)
     end
   end
 

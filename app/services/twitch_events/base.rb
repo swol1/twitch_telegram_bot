@@ -2,8 +2,8 @@
 
 module TwitchEvents
   class Base < BaseService
-    def initialize(event)
-      @event = event
+    def initialize(twitch_event)
+      @twitch_event = twitch_event
       @telegram_bot_client = TelegramBotClient.new
     end
 
@@ -13,7 +13,8 @@ module TwitchEvents
 
     private
 
-    def streamer = @event.streamer
+    def streamer = @twitch_event.streamer
+    def streamer_name = Streamer::InfoPresenter.new(streamer).name_with_emoji
     def subscribers = streamer.subscribers
     def channel_info = @_channel_info ||= streamer.channel_info
 

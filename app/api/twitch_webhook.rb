@@ -33,15 +33,13 @@ class TwitchWebhook < Grape::API
     end
 
     def event_params
-      event = params['event']
       {
         id: headers[TWITCH_MESSAGE_ID],
         type: params['subscription']['type'],
         twitch_id: params['subscription']['id'],
-        category: event['category_name'],
-        title: event['title'],
+        payload: params['event'],
         received_at: Time.current.iso8601
-      }.stringify_keys
+      }.deep_stringify_keys
     end
   end
 
@@ -56,7 +54,9 @@ class TwitchWebhook < Grape::API
       requires :type, type: String
       requires :version, type: String
       requires :condition, type: Hash do
-        requires :broadcaster_user_id, type: String
+        optional :broadcaster_user_id, type: String
+        optional :user_id,             type: String
+        exactly_one_of :broadcaster_user_id, :user_id
       end
     end
     optional :event, type: Hash do

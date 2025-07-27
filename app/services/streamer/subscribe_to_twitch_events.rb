@@ -9,31 +9,30 @@ class Streamer::SubscribeToTwitchEvents < BaseService
   end
 
   def call
-    enabled_event_types = @streamer.enabled_events.pluck(:event_type)
-    not_enabled_event_types = EventSubscription::TYPES.except(*enabled_event_types)
-    return if not_enabled_event_types.blank?
-
-    not_enabled_event_types.each do |type, version|
-      response = @twitch_api_client.subscribe_to_event(@streamer.twitch_id, type, version)
+    missing = EventSubscription::TYPES - @streamer.enabled_events.pluck(:event_type)
+    missing.each do |type|
+      config = EventSubscription.config_for(type)
+      condition = { config[:condition_key] => @streamer.twitch_id }
+      response = @twitch_api_client.subscribe_to_event(condition, type, config[:version])
 
       if already_subscribed?(response)
-        mark_as_enabled(@streamer.twitch_id, type)
+        enable_event_subscription!(@streamer.twitch_id, type)
       elsif (event_data = response_event_data(response))
-        create_event_subscription!(type, version, @streamer.twitch_id, event_data[:id])
+        create_event_subscription!(type, config[:version], @streamer.twitch_id, event_data[:id])
       else
-        handle_subscription_error(response, type)
+        handle_error(response, type)
       end
     end
   end
 
   private
 
-  def mark_as_enabled(streamer_twitch_id, event_type)
+  def enable_event_subscription!(streamer_twitch_id, event_type)
     EventSubscription.find_by!(streamer_twitch_id:, event_type:).enabled!
   end
 
   def create_event_subscription!(event_type, version, streamer_twitch_id, twitch_id)
-    EventSubscription.create!(event_type:, version:, streamer_twitch_id:, twitch_id:)
+    EventSubscription.create_event_subscription!(event_type:, version:, streamer_twitch_id:, twitch_id:)
   end
 
   def response_event_data(response)
@@ -44,9 +43,9 @@ class Streamer::SubscribeToTwitchEvents < BaseService
     response.dig(:body, :message)&.downcase == 'subscription already exists'
   end
 
-  def handle_subscription_error(response, event_type)
+  def handle_error(response, event_type)
     raise EventSubscriptionNotCreatedError, <<~ERROR_MSG
-      Failed to create subscription.
+      Failed to create event subscription.
       Response: #{response.inspect}
       Streamer: #{@streamer.inspect}
       Event: #{event_type}
