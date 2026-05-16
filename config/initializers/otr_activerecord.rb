@@ -3,7 +3,7 @@
 require 'active_support/deprecation'
 require 'active_record/encryption'
 
-ActiveSupport::Deprecation.behavior = :silence
+ActiveSupport::Deprecation._instance.behavior = :silence
 
 ActiveRecord::Base.logger = ActiveSupport::Logger.new($stdout)
 OTR::ActiveRecord.configure_from_file!(App.root.join('config', 'database.yml'))

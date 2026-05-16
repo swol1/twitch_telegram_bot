@@ -44,6 +44,20 @@ RSpec.describe HandleTwitchEventJob, type: :job do
       end
     end
 
+    context 'when the event type is unknown' do
+      let(:invalid_params) { params.merge(type: 'unknown.event') }
+
+      it 'does not call the event and logs an error' do
+        expect(TwitchEvents::StreamOnline).not_to receive(:call)
+        expect(App.logger).to receive(:log_error).with(
+          nil,
+          a_string_matching(/valid: false, not_duplicated: true/)
+        )
+
+        described_class.new.perform(invalid_params)
+      end
+    end
+
     context 'when the event is duplicated' do
       it 'does not call the event and logs an error' do
         TwitchEvent.new(params).received.mark

@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-gem 'activesupport', require: 'active_support'
+gem 'activesupport', '~> 7.2', require: 'active_support'
 gem 'dotenv'
 gem 'grape', '~> 2.0'
 gem 'grape_logging'
@@ -11,22 +11,23 @@ gem 'i18n'
 gem 'jbuilder'
 gem 'json'
 gem 'kredis'
-gem 'otr-activerecord'
+gem 'otr-activerecord', '~> 2.6'
 gem 'puma'
 gem 'rack'
 gem 'rack-attack'
 gem 'rackup'
 gem 'rake'
+gem 'sentry-ruby'
+gem 'sentry-sidekiq'
 gem 'sidekiq', '~> 7.2'
 gem 'sqlite3', '~> 1.4', force_ruby_platform: true
 gem 'stackprof'
-gem 'sentry-ruby'
-gem 'sentry-sidekiq'
 gem 'telegram-bot-ruby'
 gem 'zeitwerk'
 
 group :development, :test do
   gem 'awesome_print'
+  gem 'brakeman', require: false
   gem 'i18n-tasks'
   gem 'pry-byebug'
   gem 'rubocop', require: false

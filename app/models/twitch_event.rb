@@ -8,6 +8,7 @@ class TwitchEvent
   attr_accessor :id, :type, :twitch_id, :payload, :received_at
 
   validates :id, :type, :twitch_id, :received_at, presence: true
+  validates :type, inclusion: { in: EventSubscription::TYPES }, if: -> { type.present? }
   validate :correct_status_event_order, if: -> { ['stream.online', 'stream.offline'].include?(type) }
 
   def not_duplicated?

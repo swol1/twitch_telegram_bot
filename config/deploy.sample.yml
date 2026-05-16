@@ -2,25 +2,23 @@ service: service_name
 
 image: image_name
 
+builder:
+  arch: amd64
+
+proxy:
+  host: your_host_name.com
+  app_port: 3000
+  ssl: true
+
 servers:
   web:
     hosts:
-      - <%= ENV['HOST_IP'] %>
-    options:
-      network: "private"
-    labels:
-      traefik.http.routers.your_host_name.rule: Host(`your_host_name.com`)
-      traefik.http.routers.your_host_name_secure.entrypoints: websecure
-      traefik.http.routers.your_host_name_secure.rule: Host(`your_host_name.com`)
-      traefik.http.routers.your_host_name_secure.tls: true
-      traefik.http.routers.your_host_name_secure.tls.certresolver: letsencrypt
+      - YOUR_SERVER_IP
     cmd: bundle exec puma
 
   jobs:
     hosts:
-      - <%= ENV['HOST_IP'] %>
-    options:
-      network: "private"
+      - YOUR_SERVER_IP
     cmd: bundle exec sidekiq -r ./config/environment.rb
 
 volumes:
@@ -56,9 +54,6 @@ env:
 
 retain_containers: 1
 
-healthcheck:
-  interval: 10s
-
 accessories:
   redis:
     image: redis:latest
@@ -71,26 +66,3 @@ accessories:
         - REDIS_PASSWORD
     volumes:
       - /var/lib/redis:/data
-    options:
-      network: "private"
-
-traefik:
-  options:
-    cpus: 1
-    publish:
-      - "443:443"
-    volume:
-      - "/letsencrypt/acme.json:/letsencrypt/acme.json"
-    network: "private"
-  args:
-    accesslog: true
-    accesslog.format: json
-    entryPoints.web.address: ":80"
-    entryPoints.websecure.address: ":443"
-    entryPoints.web.http.redirections.entryPoint.to: websecure
-    entryPoints.web.http.redirections.entryPoint.scheme: https
-    entryPoints.web.http.redirections.entrypoint.permanent: true
-    certificatesResolvers.letsencrypt.acme.email: "your_email@mail.com"
-    certificatesResolvers.letsencrypt.acme.storage: "/letsencrypt/acme.json"
-    certificatesResolvers.letsencrypt.acme.httpchallenge: true
-    certificatesResolvers.letsencrypt.acme.httpchallenge.entrypoint: web

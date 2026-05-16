@@ -87,57 +87,84 @@ bundle exec sidekiq -r ./config/environment.rb
 
 ## Deployment with Kamal
 
-I used Kamal because I wanted to try it. I can't really recommend it mainly because random bugs occur. However, if you configure it properly, it can be quite convenient. Follow these steps to prepare for deployment:
+This project uses Kamal 2 for deployment. The deploy config uses `kamal-proxy`,
+TLS through the `proxy` section, app port `3000`, and Redis as an accessory.
 
-### 1. Provide Your Additional Production ENVS
+### 1. Prepare Production Configuration
 
-- `KAMAL_REGISTRY_USER=your_docker_registry_login`
-- `KAMAL_REGISTRY_PASSWORD=your_docker_registry_password`
-- `PUBLIC_API_URL=https://example.com`
-- `HOST_IP=11.111.11.111`
-- `REDIS_PASSWORD=password`
-- `REDIS_URL=redis://:password@service-redis:6379/0`
-
-### 2. Prepare for Deployment
-
-- Copy the deploy sample configuration:
+Copy the deploy sample configuration:
 
 ```bash
 cp config/deploy.sample.yml config/deploy.yml
 ```
 
-- Fill in the configuration file (`config/deploy.yml`) with your own data.
+Fill in `config/deploy.yml` with your own service name, image, registry,
+server IP, and `proxy.host`.
 
-### 3. Deploy Using Kamal
-
-Follow [Kamal's Documentation](https://kamal-deploy.org/docs/installation/) for detailed deployment instructions
-
-- Setup Let's Encrypt
+Create Kamal secrets locally:
 
 ```bash
-mkdir -p /letsencrypt && touch /letsencrypt/acme.json && chmod 600 /letsencrypt/acme.json
+mkdir -p .kamal
+touch .kamal/secrets
 ```
 
-- Create a directory for your database:
+Add these values to `.kamal/secrets`:
+
+- `KAMAL_REGISTRY_USER`
+- `KAMAL_REGISTRY_PASSWORD`
+- `TWITCH_MESSAGE_SECRET`
+- `TWITCH_CLIENT_ID`
+- `TWITCH_CLIENT_SECRET`
+- `TELEGRAM_TOKEN`
+- `TELEGRAM_SECRET_TOKEN`
+- `DB_ENCRYPTION_PRIMARY_KEY`
+- `DB_ENCRYPTION_DETERMINISTIC_KEY`
+- `DB_ENCRYPTION_KEY_DERIVATION_SALT`
+- `PUBLIC_API_URL`
+- `REDIS_PASSWORD`
+- `REDIS_URL`
+- `SENTRY_DSN`
+
+`HOST_IP` is not a Kamal secret. Put the server IP directly in the ignored
+`config/deploy.yml`.
+
+### 2. Prepare the Server
+
+Create a directory for the SQLite database volume:
 
 ```bash
-mkdir /db
+mkdir -p /db
 chown 1000:1000 /db
 ```
 
-- Create a Docker network for your services:
+Kamal 2 creates its own Docker network and manages `kamal-proxy`, so you do not
+need to create a custom Docker network or a Let's Encrypt file manually.
+
+### 3. Deploy
+
+Validate the local deploy config before changing the server:
 
 ```bash
-docker network create -d bridge private
+kamal config
+kamal secrets print | sed -E 's/=.*$/=[FILTERED]/'
 ```
 
-- Deploy:
+For a new server:
 
-On first run:
 ```bash
 kamal setup
 ```
-On subsequent runs:
+
+When upgrading an existing Kamal 1 deployment, run the upgrade first. Do not
+manually remove Traefik before this step.
+
+```bash
+kamal upgrade
+kamal deploy
+```
+
+On subsequent deploys:
+
 ```bash
 kamal deploy
 ```
