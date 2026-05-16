@@ -97,6 +97,27 @@ RSpec.describe TwitchApiClient do
   end
 
   describe '#execute_request' do
+    it 'sets HTTP timeouts' do
+      uri = URI("#{base_url}/users?login=testuser")
+      request = Net::HTTP::Get.new(uri)
+      response = instance_double(Net::HTTPSuccess, code: '200', body: nil)
+      http = instance_double(Net::HTTP, request: response)
+      allow(response).to receive(:is_a?) do |klass|
+        klass == Net::HTTPSuccess
+      end
+
+      expect(Net::HTTP).to receive(:start)
+        .with(
+          uri.host,
+          uri.port,
+          use_ssl: true,
+          **TwitchApiClient::HTTP_OPTIONS
+        )
+        .and_yield(http)
+
+      expect(client.send(:execute_request, uri, request)).to eq(status: '200')
+    end
+
     it 'logs an error if the request fails' do
       uri = URI("#{base_url}/users?login=invaliduser")
       request = Net::HTTP::Get.new(uri)

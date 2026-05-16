@@ -3,6 +3,7 @@
 class TwitchApiClient
   BASE_TWITCH_TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
   BASE_TWITCH_API_URL = 'https://api.twitch.tv/helix'
+  HTTP_OPTIONS = { open_timeout: 2, read_timeout: 5 }.freeze
 
   def initialize
     @client_id = App.secrets.twitch_client_id
@@ -51,14 +52,15 @@ class TwitchApiClient
   def access_token
     @_access_token ||= begin
       uri = URI(BASE_TWITCH_TOKEN_URL)
-      response = Net::HTTP.post_form(
-        uri,
-        {
-          client_id: @client_id,
-          client_secret: @client_secret,
-          grant_type: 'client_credentials'
-        }
+      request = Net::HTTP::Post.new(uri)
+      request.set_form_data(
+        client_id: @client_id,
+        client_secret: @client_secret,
+        grant_type: 'client_credentials'
       )
+      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', **HTTP_OPTIONS) do |http|
+        http.request(request)
+      end
       JSON.parse(response.body)['access_token']
     end
   end
@@ -93,7 +95,7 @@ class TwitchApiClient
   def execute_request(uri, request)
     RateLimiter.check('rate_limit:twitch_requests', limit: 29)
 
-    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', **HTTP_OPTIONS) do |http|
       response = http.request(request)
       App.logger.log_error(nil, "Request failed: #{response.body}") unless response.is_a?(Net::HTTPSuccess)
       formatted_response = { status: response.code }
