@@ -2,6 +2,7 @@
 
 class HandleTelegramCommandJob
   include Sidekiq::Job
+
   sidekiq_options retry: 0
 
   COMMANDS = {
