@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+require 'erb'
+require 'pathname'
+require 'yaml'
+
+require 'active_support/core_ext/hash/keys'
+require 'active_support/string_inquirer'
+require 'hashie'
+
 require_relative 'logger_with_format'
 
 class App
