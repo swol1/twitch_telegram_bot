@@ -5,6 +5,7 @@ class TwitchWebhook < Grape::API
   TWITCH_MESSAGE_TIMESTAMP = 'twitch-eventsub-message-timestamp'
   TWITCH_MESSAGE_SIGNATURE = 'twitch-eventsub-message-signature'
   TWITCH_MESSAGE_TYPE = 'twitch-eventsub-message-type'
+  TWITCH_MESSAGE_MAX_AGE = 10.minutes
 
   MESSAGE_TYPE_VERIFICATION = 'webhook_callback_verification'
   MESSAGE_TYPE_NOTIFICATION = 'notification'
@@ -25,9 +26,21 @@ class TwitchWebhook < Grape::API
       ].join
       computed_signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), secret, message)
       expected_signature = headers[TWITCH_MESSAGE_SIGNATURE]&.split('=')&.last
+      return false if expected_signature.blank?
+
       Rack::Utils.secure_compare(computed_signature, expected_signature)
     end
 
+    def fresh_twitch_timestamp?
+      timestamp = Time.iso8601(headers[TWITCH_MESSAGE_TIMESTAMP].to_s)
+
+      timestamp.between?(TWITCH_MESSAGE_MAX_AGE.ago, TWITCH_MESSAGE_MAX_AGE.from_now)
+    rescue ArgumentError
+      false
+    end
+  end
+
+  helpers do
     def event_subscription
       @_event_subscription ||= EventSubscription.find_by(twitch_id: params['subscription']['id'])
     end
@@ -44,6 +57,7 @@ class TwitchWebhook < Grape::API
   end
 
   before do
+    error!('Invalid timestamp', 403) unless fresh_twitch_timestamp?
     error!('Invalid signature', 403) unless verify_twitch_signature
     error!('Invalid event subscription', 422) unless event_subscription.present?
   end

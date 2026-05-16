@@ -66,6 +66,27 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       end
     end
 
+    context 'when the timestamp is invalid' do
+      let(:message_type) { 'notification' }
+
+      it 'returns a 403 status' do
+        allow(HandleTwitchEventJob).to receive(:perform_async)
+
+        [
+          headers.merge('HTTP_TWITCH_EVENTSUB_MESSAGE_TIMESTAMP' => 11.minutes.ago.iso8601),
+          headers.except('HTTP_TWITCH_EVENTSUB_MESSAGE_TIMESTAMP'),
+          headers.merge('HTTP_TWITCH_EVENTSUB_MESSAGE_TIMESTAMP' => 'not-a-timestamp')
+        ].each do |request_headers|
+          post '/twitch/eventsub', params.to_json, request_headers
+
+          expect(last_response.status).to eq(403)
+          expect(last_response.body).to include('Invalid timestamp')
+        end
+
+        expect(HandleTwitchEventJob).not_to have_received(:perform_async)
+      end
+    end
+
     context 'when the event subscription does not exist' do
       let(:message_type) { 'notification' }
 
