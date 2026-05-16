@@ -16,10 +16,12 @@ module SentryTracing
   end
 
   def self.build_transaction_name(request, params)
-    "#{request.request_method} #{request.path}".tap do |name|
-      if request.path == '/telegram/webhook' && (message_text = params.dig(:message, :text))
-        name + " #{message_text.downcase.split.first}"
-      end
-    end
+    name = "#{request.request_method} #{request.path}"
+    return name unless request.path == '/telegram/webhook'
+
+    command = params.dig(:message, :text).to_s.downcase.split.first
+    return name unless command&.start_with?('/')
+
+    "#{name} #{command}"
   end
 end
