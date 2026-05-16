@@ -32,7 +32,7 @@ class Streamer::SubscribeToTwitchEvents < BaseService
   end
 
   def create_event_subscription!(event_type, version, streamer_twitch_id, twitch_id)
-    EventSubscription.create_event_subscription!(event_type:, version:, streamer_twitch_id:, twitch_id:)
+    EventSubscription.create!(event_type:, version:, streamer_twitch_id:, twitch_id:)
   end
 
   def response_event_data(response)

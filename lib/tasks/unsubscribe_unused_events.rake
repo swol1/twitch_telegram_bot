@@ -7,13 +7,12 @@ task unsubscribe_unused_events: :environment do
   removed_count = 0
   # checking each record is not efficient, but the number of records is small
   # maybe improve this in the future
-  all_subscriptions[:body][:data].each do |s|
-    next if EventSubscription.exists?(twitch_id: s[:id])
-    next if s[:status] == 'webhook_callback_verification_pending'
+  all_subscriptions[:body][:data].each do |subscription|
+    twitch_id = subscription[:id]
+    next if EventSubscription.exists?(twitch_id:)
+    next if subscription[:status] == 'webhook_callback_verification_pending'
 
-    twitch_api_client.delete_subscription_to_event(s[:id])
-
-    response = twitch_api_client.delete_subscription_to_event(s[:id])
+    response = twitch_api_client.delete_subscription_to_event(twitch_id)
     if response[:status] == '204'
       removed_count += 1
       puts "Successfully unsubscribed from twitch event for subscription #{twitch_id}."
