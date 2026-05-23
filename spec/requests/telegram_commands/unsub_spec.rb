@@ -6,6 +6,17 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
   describe '/unsub some_streamer command' do
     let(:message_text) { '/unsub some_streamer' }
 
+    context 'when login not provided' do
+      let(:message_text) { '/unsub' }
+
+      it 'sends error' do
+        expected_text = I18n.t('errors.login_not_provided')
+        expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
+
+        post '/telegram/webhook', message_params.to_json, headers
+      end
+    end
+
     context 'when subscribed to streamer' do
       it 'unsubscribes from streamer' do
         streamer = create(:streamer, :with_enabled_subscriptions, login: 'some_streamer')

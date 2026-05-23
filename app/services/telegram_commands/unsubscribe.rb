@@ -12,6 +12,8 @@ module TelegramCommands
     def login = @args
 
     def unsubscribe_chat_from_streamer
+      return I18n.t('errors.login_not_provided') unless login
+
       streamer = Streamer.find_by(login:)
       chat_streamer_subscription = chat.chat_streamer_subscriptions.find_by(streamer_id: streamer&.id)
       return I18n.t('errors.chat_not_subscribed', login:) unless streamer && chat_streamer_subscription
