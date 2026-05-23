@@ -12,7 +12,7 @@ class Streamer::InfoPresenter
   end
 
   def to_text(*args)
-    args = %i[name category title twitch telegram] if args.blank?
+    args = %i[name category title twitch telegram unsubscribe] if args.blank?
     formatted_attributes.values_at(*args).compact_blank.join("\n")
   end
 
@@ -23,12 +23,14 @@ class Streamer::InfoPresenter
     return {} if channel_info.compact_blank.blank?
 
     category, title, status = channel_info.values_at(:category, :title, :status)
+
     {
       name: "<b>#{@streamer.name}</b>#{status_emoji(status)}",
       category: (I18n.t('streamer_subscription.info.category', category:) if category.present?),
       title: (I18n.t('streamer_subscription.info.title', title:) if title.present?),
       twitch: "twitch: https://twitch.tv/#{@streamer.login}",
-      telegram: ("telegram: https://t.me/#{@streamer.telegram_login}" if @streamer.telegram_login.present?)
+      telegram: ("telegram: https://t.me/#{@streamer.telegram_login}" if @streamer.telegram_login.present?),
+      unsubscribe: I18n.t('streamer_subscription.info.unsubscribe', login: @streamer.login)
     }.compact_blank
   end
 

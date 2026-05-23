@@ -57,6 +57,7 @@ ru:
         Just Chatting Mode: <b>%{just_chatting_status}</b>
 
       title: 'Название: %{title}'
+      unsubscribe: 'отписаться: <code>/unsub %{login}</code>'
     subscribed_success: |-
       Вы подписались на уведомления от <b>%{name}</b>.
       Количество еще доступных подписок: %{left_subs}

@@ -57,6 +57,7 @@ en:
         Just Chatting Mode: <b>%{just_chatting_status}</b>
 
       title: 'Title: %{title}'
+      unsubscribe: 'unsubscribe: <code>/unsub %{login}</code>'
     subscribed_success: |-
       You have successfully subscribed to notifications from <b>%{name}</b>.
       Number of available subscriptions: %{left_subs}

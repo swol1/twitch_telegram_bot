@@ -60,11 +60,13 @@ RSpec.describe TelegramWebhook, :default_telegram_setup, type: :request do
           Category: Some Category
           Title: Some Title
           twitch: https://twitch.tv/streamer_login_1
+          unsubscribe: <code>/unsub streamer_login_1</code>
 
           <b>Streamer 3</b> 🟢
           Title: Some Title t.me/my_login
           twitch: https://twitch.tv/streamer_login_3
           telegram: https://t.me/my_login
+          unsubscribe: <code>/unsub streamer_login_3</code>
         TEXT
         expect(telegram_bot_client).to receive_send_message_with(text: expected_text).to_chats([chat])
 
