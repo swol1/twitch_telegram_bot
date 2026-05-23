@@ -9,6 +9,7 @@ en:
     Example: <code>sub twitch</code>
 
     /list - list of your subscriptions with the latest streamer’s information
+    /live - list of streamers from your subscriptions who are live now
     /toggle_just_chatting_mode - turn on/off Just Chatting mode. When enabled, you will only receive notifications if the streamer's category is set to <b>Just Chatting</b>. When disabled, you will receive all notifications.
   errors:
     chat_not_subscribed: You were not subscribed to <b>%{login}</b>.
@@ -46,6 +47,8 @@ en:
   streamer_subscription:
     info:
       category: 'Category: %{category}'
+      live: "Streamers live now:\n\n"
+      no_live: There are no live streamers from your list.
       not_available: "Data is not available yet 😢"
       not_subscribed: "You are not subscribed to any streamer yet 😢"
       subscribed_to: |+

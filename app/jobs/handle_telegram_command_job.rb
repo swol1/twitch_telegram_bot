@@ -12,6 +12,7 @@ class HandleTelegramCommandJob
     'unsub' => 'Unsubscribe',
     'unsub_all' => 'UnsubscribeAll',
     'list' => 'List',
+    'live' => 'Live',
     'toggle_just_chatting_mode' => 'ToggleJustChattingMode'
   }.freeze
 

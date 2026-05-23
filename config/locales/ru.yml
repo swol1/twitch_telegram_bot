@@ -9,6 +9,7 @@ ru:
     Пример: <code>sub twitch</code>
 
     /list - список ваших подписок c последней информацией о стримерах
+    /live - список стримеров из ваших подписок, которые сейчас в эфире
     /toggle_just_chatting_mode - включить/выключить Just Chatting Mode. При включенном, вы будете получать уведомления только, если у стримера стоит категория <b>Just Chatting</b>. При выключенном, вы будете получать все уведомления.
   errors:
     chat_not_subscribed: Вы не были подписаны на <b>%{login}</b>.
@@ -46,6 +47,8 @@ ru:
   streamer_subscription:
     info:
       category: 'Категория: %{category}'
+      live: "Сейчас в эфире:\n\n"
+      no_live: Сейчас никто из вашего списка не в эфире.
       not_available: "Данных пока нет 😢"
       not_subscribed: "Вы пока не подписались ни на одного стримера 😢"
       subscribed_to: |+
