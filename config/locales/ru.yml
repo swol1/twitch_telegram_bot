@@ -63,3 +63,13 @@ ru:
       Количество еще доступных подписок: %{left_subs}
     unsubscribed: Вы отписались от <b>%{login}</b>.
     unsubscribed_all: Вы отписались от всех уведомлений.
+  telegram_bot:
+    commands:
+    - command: help
+      description: Помощь
+    - command: list
+      description: Показать ваши подписки
+    - command: live
+      description: Показать кто сейчас в эфире
+    - command: toggle_just_chatting_mode
+      description: Переключить Just Chatting mode

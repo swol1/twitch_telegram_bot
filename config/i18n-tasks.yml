@@ -142,7 +142,8 @@ search:
 # - '{devise,simple_form}.*'
 
 ## Consider these keys used:
-# ignore_unused:
+ignore_unused:
+- 'telegram_bot.commands'
 # - 'activerecord.attributes.*'
 # - '{devise,kaminari,will_paginate}.*'
 # - 'simple_form.{yes,no}'

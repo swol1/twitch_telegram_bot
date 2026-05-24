@@ -2,7 +2,6 @@
 
 class Root < Grape::API
   insert_before Grape::Middleware::Error, RequestLoggerMiddleware
-  include SentryTracing
 
   helpers do
     def logger = App.logger

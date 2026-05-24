@@ -63,3 +63,13 @@ en:
       Number of available subscriptions: %{left_subs}
     unsubscribed: You have unsubscribed from <b>%{login}</b>.
     unsubscribed_all: You have unsubscribed from all notifications.
+  telegram_bot:
+    commands:
+    - command: help
+      description: Show help
+    - command: list
+      description: Show your subscriptions
+    - command: live
+      description: Show who is live now
+    - command: toggle_just_chatting_mode
+      description: Toggle Just Chatting mode
