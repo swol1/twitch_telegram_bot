@@ -4,7 +4,6 @@ module TwitchEvents
   class Base < BaseService
     def initialize(twitch_event)
       @twitch_event = twitch_event
-      @telegram_bot_client = TelegramBotClient.new
     end
 
     def call
@@ -14,19 +13,17 @@ module TwitchEvents
     private
 
     def streamer = @twitch_event.streamer
-    def streamer_name = Streamer::InfoPresenter.new(streamer).name_with_emoji
     def subscribers = streamer.subscribers
     def channel_info = @_channel_info ||= streamer.channel_info
 
-    def notify_subscribers(text:)
-      keyboard = Streamer::TelegramKeyboardPresenter.new(streamer).social_links_keyboard
-      subscribers.each do |subscriber|
-        @telegram_bot_client.send_message(
-          chat_id: subscriber.telegram_id,
-          text: text[subscriber.locale],
-          reply_markup: keyboard,
-          disable_web_page_preview: true,
-          parse_mode: :html
+    def notify_subscribers(notification_data: {})
+      subscribers.find_each.with_index do |subscriber, index|
+        TwitchEvents::DeliverNotificationJob.perform_in(
+          index / 29,
+          subscriber.id,
+          streamer.id,
+          @twitch_event.type,
+          notification_data
         )
       end
     end

@@ -5,13 +5,16 @@ require 'spec_helper'
 RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
   let(:params) { base_params }
   let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'stream.online') }
+  let(:stream_restart_threshold) { App.secrets.stream_restart_threshold_seconds.to_i.seconds }
 
   subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
-  describe 'POST channel.online event' do
+  before { allow(TwitchEvents::DeliverNotificationJob).to receive(:perform_in) }
+
+  describe 'POST stream.online event' do
     context 'when status changed' do
       before do
-        streamer.channel_info[:status_received_at] = (Time.current - 61.seconds).iso8601
+        streamer.channel_info[:status_received_at] = (Time.current - stream_restart_threshold - 1.second).iso8601
         streamer.channel_info[:status] = 'offline'
       end
 
@@ -29,29 +32,20 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       it 'notifies subscribers' do
         chats = create_list(:chat, 3, subscriptions: [streamer])
 
-        expected_text = '<b>Streamer Name</b> 😀 is online'
-        expect(telegram_bot_client).to receive_send_message_with(
-          {
-            text: expected_text,
-            reply_markup: Telegram::Bot::Types::InlineKeyboardMarkup.new(
-              inline_keyboard: [[
-                Telegram::Bot::Types::InlineKeyboardButton.new(
-                  text: 'Twitch', url: "https://twitch.tv/#{streamer.login}"
-                )
-              ]]
-            )
-          }
-        ).to_chats(chats)
-
         send_request
 
+        expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in).exactly(chats.size).times
+        chats.each do |chat|
+          expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in)
+            .with(0, chat.id, streamer.id, 'stream.online', {})
+        end
         expect(last_response.status).to eq(204)
       end
     end
 
     context 'when stream restarted' do
       before do
-        streamer.channel_info[:status_received_at] = (Time.current - 50.seconds).iso8601
+        streamer.channel_info[:status_received_at] = (Time.current - stream_restart_threshold + 1.second).iso8601
         streamer.channel_info[:status] = 'offline'
       end
 
@@ -63,7 +57,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       it 'doesn\'t send message to chats' do
         send_request
 
-        expect(telegram_bot_client).not_to have_received(:send_message)
+        expect(TwitchEvents::DeliverNotificationJob).not_to have_received(:perform_in)
         expect(last_response.status).to eq(204)
       end
     end

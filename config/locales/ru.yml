@@ -31,19 +31,13 @@ ru:
   just_chatting_mode_off: Just Chatting Mode <b>выключен</b>. Вы будете получать все уведомления.
   just_chatting_mode_on: Just Chatting Mode <b>включен</b>. Вы будете получать уведомления только с категорией <b>Just Chatting</b>.
   streamer_notification:
+    category: Категория
     info_update: |-
       %{old_name} изменил информацию о себе:
       Логин: %{login}
       Имя: %{name}
-    offline: |2-
-
-
-      Стример возможно оффлайн
     online: "%{streamer_name} онлайн"
-    update: |-
-      %{streamer_name}
-      Категория: %{category}
-      Название: %{title}
+    title: Название
   streamer_subscription:
     info:
       category: 'Категория: %{category}'

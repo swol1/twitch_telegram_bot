@@ -3,10 +3,17 @@
 module TwitchEvents
   class ChannelUpdate < Base
     def call
-      return if values_unchanged?
+      changed_fields = changed_channel_fields
+      return if changed_fields.empty?
 
       update_streamer_info
-      notify_subscribers(text: text_with_locales)
+      notify_subscribers(
+        notification_data: {
+          'category' => category,
+          'title' => title,
+          'changed_fields' => changed_fields
+        }
+      )
     end
 
     private
@@ -23,19 +30,17 @@ module TwitchEvents
       category == 'Just Chatting' ? super : super.without_just_chatting_mode
     end
 
-    def values_unchanged?
-      cached_category, cached_title = channel_info.values_at(:category, :title)
-      return false unless cached_category && cached_title
-
-      cached_category.squish.casecmp?(category.squish) && cached_title.squish.casecmp?(title.squish)
+    def changed_channel_fields
+      fields = []
+      fields << 'category' if value_changed?(channel_info[:category], category)
+      fields << 'title' if value_changed?(channel_info[:title], title)
+      fields
     end
 
-    def text_with_locales
-      I18n.with_all_locales do
-        text = I18n.t('streamer_notification.update', streamer_name:, category:, title:)
-        text += I18n.t('streamer_notification.offline') if channel_info.to_h.fetch(:status, 'offline') == 'offline'
-        text
-      end
+    def value_changed?(old_value, new_value)
+      return true unless old_value && new_value
+
+      !old_value.squish.casecmp?(new_value.squish)
     end
   end
 end

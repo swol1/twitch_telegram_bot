@@ -15,6 +15,8 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
   subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
+  before { allow(TwitchEvents::DeliverNotificationJob).to receive(:perform_in) }
+
   describe 'POST channel.update event' do
     context 'when values changed' do
       before { streamer.channel_info.update(title: 'title', category: 'category', status: 'online') }
@@ -28,30 +30,19 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
       it 'notifies subscribers' do
         chats = create_list(:chat, 3, subscriptions: [streamer])
-
-        expected_text = <<~TEXT.strip
-          <b>Streamer Name</b> 😀
-          Category: some_category
-          Title: some_title t.me/my_tg_login
-        TEXT
-        expect(telegram_bot_client).to receive_send_message_with(
-          {
-            text: expected_text,
-            reply_markup: Telegram::Bot::Types::InlineKeyboardMarkup.new(
-              inline_keyboard: [[
-                Telegram::Bot::Types::InlineKeyboardButton.new(
-                  text: 'Twitch', url: 'https://twitch.tv/streamer_login'
-                ),
-                Telegram::Bot::Types::InlineKeyboardButton.new(
-                  text: 'Telegram', url: 'https://t.me/my_tg_login'
-                )
-              ]]
-            )
-          }
-        ).to_chats(chats)
+        notification_data = {
+          'category' => 'some_category',
+          'title' => 'some_title t.me/my_tg_login',
+          'changed_fields' => %w[category title]
+        }
 
         send_request
 
+        expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in).exactly(chats.size).times
+        chats.each do |chat|
+          expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in)
+            .with(0, chat.id, streamer.id, 'channel.update', notification_data)
+        end
         expect(last_response.status).to eq(204)
       end
     end
@@ -69,7 +60,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       it 'doesn\'t notify chats' do
         send_request
 
-        expect(telegram_bot_client).not_to have_received(:send_message)
+        expect(TwitchEvents::DeliverNotificationJob).not_to have_received(:perform_in)
         expect(last_response.status).to eq(204)
       end
     end
@@ -90,10 +81,16 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
         send_request
 
-        expect(telegram_bot_client).not_to have_received(:send_message)
-          .with(hash_including(chat_id: chat_with_jc_mode.telegram_id))
-        expect(telegram_bot_client).to have_received(:send_message)
-          .with(hash_including(chat_id: chat_without_jc_mode.telegram_id))
+        expect(TwitchEvents::DeliverNotificationJob).not_to have_received(:perform_in)
+          .with(anything, chat_with_jc_mode.id, anything, anything, anything)
+        expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in)
+          .with(
+            0,
+            chat_without_jc_mode.id,
+            streamer.id,
+            'channel.update',
+            hash_including('category' => 'some_category')
+          )
         expect(last_response.status).to eq(204)
       end
 
@@ -103,10 +100,16 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
         post '/twitch/eventsub', params.deep_merge(event: { category_name: 'Just Chatting' }).to_json, headers
 
-        expect(telegram_bot_client).to have_received(:send_message)
-          .with(hash_including(chat_id: chat_with_jc_mode.telegram_id))
-        expect(telegram_bot_client).to have_received(:send_message)
-          .with(hash_including(chat_id: chat_without_jc_mode.telegram_id))
+        [chat_with_jc_mode, chat_without_jc_mode].each do |chat|
+          expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in)
+            .with(
+              0,
+              chat.id,
+              streamer.id,
+              'channel.update',
+              hash_including('category' => 'Just Chatting')
+            )
+        end
         expect(last_response.status).to eq(204)
       end
     end

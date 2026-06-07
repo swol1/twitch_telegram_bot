@@ -9,14 +9,10 @@ class TwitchEvent
 
   validates :id, :type, :twitch_id, :received_at, presence: true
   validates :type, inclusion: { in: EventSubscription::TYPES }, if: -> { type.present? }
-  validate :correct_status_event_order, if: -> { ['stream.online', 'stream.offline'].include?(type) }
+  validate :received_after_previous_status_event, if: -> { ['stream.online', 'stream.offline'].include?(type) }
 
   def not_duplicated?
     received.mark(expires_in: 600.seconds, force: false)
-  end
-
-  def correct_status_event_order
-    errors.add(:base, 'Incorrect status order') if secs_since_prev_status_event.negative?
   end
 
   def secs_since_prev_status_event
@@ -28,6 +24,10 @@ class TwitchEvent
   end
 
   private
+
+  def received_after_previous_status_event
+    errors.add(:base, 'Incorrect status order') if secs_since_prev_status_event.negative?
+  end
 
   def prev_status_event_time
     @_prev_status_event_time ||= streamer.channel_info[:status_received_at].presence || 1.day.ago.iso8601

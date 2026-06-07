@@ -5,9 +5,8 @@ coverage
 # Ignore bundler config.
 /.bundle
 
-# Ignore all environment files (except templates).
+# Ignore all environment files (except local template and test defaults).
 /.env*
-!/.env.template
 !/.env.local.template
 !/.env.test
 

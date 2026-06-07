@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe RateLimiter do
-  describe '.check' do
+  describe '.wait' do
     let(:limiter) { instance_double(Kredis::Limiter, poke: true) }
 
     before do
@@ -16,7 +16,7 @@ RSpec.describe RateLimiter do
 
         expect(RateLimiter).to receive(:sleep).with(0.1).twice
 
-        RateLimiter.check('rate_limit:key', limit: 5)
+        RateLimiter.wait('rate_limit:key', limit: 5)
       end
     end
 
@@ -27,7 +27,7 @@ RSpec.describe RateLimiter do
         expect(RateLimiter).not_to receive(:sleep)
         expect(limiter).to receive(:poke)
 
-        RateLimiter.check('rate_limit:key', limit: 5)
+        RateLimiter.wait('rate_limit:key', limit: 5)
       end
     end
   end

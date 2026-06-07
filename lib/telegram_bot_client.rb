@@ -6,8 +6,8 @@ class TelegramBotClient
   end
 
   def send_message(message)
-    RateLimiter.check('rate_limit:chats', limit: 29)
-    RateLimiter.check("rate_limit:chat_#{message[:chat_id]}", limit: 1)
+    RateLimiter.wait('rate_limit:chats', limit: 29)
+    RateLimiter.wait("rate_limit:chat_#{message[:chat_id]}", limit: 1)
 
     message[:text] = sanitized_text(message[:text])
     @api.send_message(message)
