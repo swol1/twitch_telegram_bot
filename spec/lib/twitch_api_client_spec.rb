@@ -17,7 +17,7 @@ RSpec.describe TwitchApiClient do
   before do
     stub_request(:post, token_url)
       .to_return(body: { access_token: }.to_json, status: 200)
-    allow(RateLimiter).to receive(:check).with('rate_limit:twitch_requests', limit: 29).and_return(nil)
+    allow(RateLimiter).to receive(:wait).with('rate_limit:twitch_requests', limit: 29).and_return(nil)
   end
 
   describe '#subscribe_to_event' do
@@ -132,7 +132,7 @@ RSpec.describe TwitchApiClient do
 
       client.send(:execute_request, uri, request)
 
-      expect(RateLimiter).to have_received(:check).with('rate_limit:twitch_requests', limit: 29)
+      expect(RateLimiter).to have_received(:wait).with('rate_limit:twitch_requests', limit: 29)
     end
   end
 end

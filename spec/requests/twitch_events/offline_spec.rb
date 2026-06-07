@@ -8,6 +8,8 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
 
   subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
+  before { allow(TwitchEvents::DeliverNotificationJob).to receive(:perform_in) }
+
   describe 'POST channel.offline event' do
     context 'when status changed' do
       before { streamer.channel_info[:status] = 'online' }
@@ -26,7 +28,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       it 'it doesn\'t notify chats' do
         send_request
 
-        expect(telegram_bot_client).not_to have_received(:send_message)
+        expect(TwitchEvents::DeliverNotificationJob).not_to have_received(:perform_in)
         expect(last_response.status).to eq(204)
       end
     end
@@ -41,7 +43,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
       it 'doesn\'t notify chats' do
         send_request
 
-        expect(telegram_bot_client).not_to have_received(:send_message)
+        expect(TwitchEvents::DeliverNotificationJob).not_to have_received(:perform_in)
         expect(last_response.status).to eq(204)
       end
     end

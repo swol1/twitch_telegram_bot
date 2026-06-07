@@ -13,25 +13,25 @@ RSpec.describe TelegramBotClient do
 
   describe '#send_message' do
     it 'checks the global rate limit' do
-      allow(RateLimiter).to receive(:check)
+      allow(RateLimiter).to receive(:wait)
       allow(telegram_api).to receive(:send_message)
 
       client.send_message(message)
 
-      expect(RateLimiter).to have_received(:check).with('rate_limit:chats', limit: 29)
+      expect(RateLimiter).to have_received(:wait).with('rate_limit:chats', limit: 29)
     end
 
     it 'checks the chat rate limit' do
-      allow(RateLimiter).to receive(:check)
+      allow(RateLimiter).to receive(:wait)
       allow(telegram_api).to receive(:send_message)
 
       client.send_message(message)
 
-      expect(RateLimiter).to have_received(:check).with("rate_limit:chat_#{message[:chat_id]}", limit: 1)
+      expect(RateLimiter).to have_received(:wait).with("rate_limit:chat_#{message[:chat_id]}", limit: 1)
     end
 
     it 'sends the message after checking rate limits' do
-      allow(RateLimiter).to receive(:check).and_return(nil)
+      allow(RateLimiter).to receive(:wait).and_return(nil)
       allow(telegram_api).to receive(:send_message)
 
       client.send_message(message)
@@ -40,7 +40,7 @@ RSpec.describe TelegramBotClient do
     end
 
     it 'sanitizes the message text before sending' do
-      allow(RateLimiter).to receive(:check).and_return(nil)
+      allow(RateLimiter).to receive(:wait).and_return(nil)
       allow(telegram_api).to receive(:send_message)
 
       raw_message = { chat_id: '123', text: 'Hello <b>World</b> @user <script>alert("xss")</script>' }
@@ -58,7 +58,7 @@ RSpec.describe TelegramBotClient do
         response = instance_double('Response', body: { 'error_code' => 403 }.to_json, status: 403)
         error = Telegram::Bot::Exceptions::ResponseError.new(response:)
 
-        allow(RateLimiter).to receive(:check).and_return(nil)
+        allow(RateLimiter).to receive(:wait).and_return(nil)
         allow(telegram_api).to receive(:send_message).with(message).and_raise(error)
 
         expect(App.logger).to receive(:log_error)
@@ -72,7 +72,7 @@ RSpec.describe TelegramBotClient do
       it 'logs the error' do
         error = StandardError.new('Some error')
 
-        allow(RateLimiter).to receive(:check).and_return(nil)
+        allow(RateLimiter).to receive(:wait).and_return(nil)
         allow(telegram_api).to receive(:send_message).and_raise(error)
 
         expect(App.logger).to receive(:log_error)

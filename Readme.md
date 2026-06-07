@@ -13,20 +13,15 @@ git clone https://github.com/swol1/twitch_telegram_bot.git
 cd twitch_telegram_bot
 ```
 
-### 2. Copy the Environment Template
-
-- I want to run locally:
+### 2. Copy the Local Environment Template
 
 ```bash
 cp .env.local.template .env.local
 ```
 
-- I want to deploy:
+Then fill in environment variables inside `.env.local`.
 
-```bash
-cp .env.template .env
-```
-Then fill in environment variables inside the .env.local or .env file.
+Production secrets are configured through Kamal in `.kamal/secrets`.
 
 ### 3. Generate Your Own Secrets
 

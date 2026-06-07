@@ -93,7 +93,7 @@ class TwitchApiClient
 
   # twitch api has a rate limit of 30 requests per second
   def execute_request(uri, request)
-    RateLimiter.check('rate_limit:twitch_requests', limit: 29)
+    RateLimiter.wait('rate_limit:twitch_requests', limit: 29)
 
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', **HTTP_OPTIONS) do |http|
       response = http.request(request)
