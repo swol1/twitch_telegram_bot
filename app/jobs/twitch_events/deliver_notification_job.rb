@@ -37,11 +37,13 @@ module TwitchEvents
       title = notification_data['title']
       changed_fields = notification_data.fetch('changed_fields')
 
-      [
+      lines = [
         streamer_name(streamer),
         update_line(I18n.t('streamer_notification.category'), category, changed_fields.include?('category')),
         update_line(I18n.t('streamer_notification.title'), title, changed_fields.include?('title'))
-      ].join("\n")
+      ]
+      lines += ['', I18n.t('streamer_notification.offline')] if notification_data['stream_offline']
+      lines.join("\n")
     end
 
     def streamer_name(streamer)

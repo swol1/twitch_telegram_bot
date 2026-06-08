@@ -12,6 +12,7 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
     )
   end
   let(:event_subscription) { streamer.event_subscriptions.find_by(event_type: 'channel.update') }
+  let(:stream_restart_threshold) { App.secrets.stream_restart_threshold_seconds.to_i.seconds }
 
   subject(:send_request) { post '/twitch/eventsub', params.to_json, headers }
 
@@ -33,7 +34,8 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
         notification_data = {
           'category' => 'some_category',
           'title' => 'some_title t.me/my_tg_login',
-          'changed_fields' => %w[category title]
+          'changed_fields' => %w[category title],
+          'stream_offline' => false
         }
 
         send_request
@@ -44,6 +46,58 @@ RSpec.describe TwitchWebhook, :default_twitch_setup, type: :request do
             .with(0, chat.id, streamer.id, 'channel.update', notification_data)
         end
         expect(last_response.status).to eq(204)
+      end
+    end
+
+    context 'when stream recently went offline' do
+      before do
+        streamer.channel_info.update(
+          title: 'title',
+          category: 'category',
+          status: 'offline',
+          status_received_at: (Time.current - stream_restart_threshold + 1.second).iso8601
+        )
+      end
+
+      it 'doesn\'t mark stream as offline' do
+        chat = create(:chat, subscriptions: [streamer])
+
+        send_request
+
+        expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in)
+          .with(
+            0,
+            chat.id,
+            streamer.id,
+            'channel.update',
+            hash_including('stream_offline' => false)
+          )
+      end
+    end
+
+    context 'when stream has been offline longer than restart threshold' do
+      before do
+        streamer.channel_info.update(
+          title: 'title',
+          category: 'category',
+          status: 'offline',
+          status_received_at: (Time.current - stream_restart_threshold - 1.second).iso8601
+        )
+      end
+
+      it 'marks stream as offline' do
+        chat = create(:chat, subscriptions: [streamer])
+
+        send_request
+
+        expect(TwitchEvents::DeliverNotificationJob).to have_received(:perform_in)
+          .with(
+            0,
+            chat.id,
+            streamer.id,
+            'channel.update',
+            hash_including('stream_offline' => true)
+          )
       end
     end
 

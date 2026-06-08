@@ -23,7 +23,12 @@ RSpec.describe TwitchEvents::DeliverNotificationJob, type: :job do
     end
 
     it 'delivers a channel update notification' do
-      notification_data = { 'category' => 'some_category', 'title' => 'some_title', 'changed_fields' => [] }
+      notification_data = {
+        'category' => 'some_category',
+        'title' => 'some_title',
+        'changed_fields' => [],
+        'stream_offline' => false
+      }
       expected_text = <<~TEXT.strip
         <b>Streamer Name</b> 😀
         Category: some_category
@@ -42,11 +47,33 @@ RSpec.describe TwitchEvents::DeliverNotificationJob, type: :job do
       )
     end
 
+    it 'shows when the stream is offline' do
+      notification_data = {
+        'category' => 'some_category',
+        'title' => 'some_title',
+        'changed_fields' => [],
+        'stream_offline' => true
+      }
+      expected_text = <<~TEXT.strip
+        <b>Streamer Name</b> 😀
+        Category: some_category
+        Title: some_title
+
+        Stream is offline
+      TEXT
+
+      described_class.new.perform(subscriber.id, streamer.id, 'channel.update', notification_data)
+
+      expect(telegram_bot_client).to have_received(:send_message)
+        .with(hash_including(chat_id: subscriber.telegram_id, text: expected_text))
+    end
+
     it 'highlights changed channel update lines' do
       notification_data = {
         'category' => 'some_category',
         'title' => 'another_title',
-        'changed_fields' => ['title']
+        'changed_fields' => ['title'],
+        'stream_offline' => false
       }
       expected_text = <<~TEXT.strip
         <b>Streamer Name</b> 😀

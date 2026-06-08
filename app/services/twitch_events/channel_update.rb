@@ -11,7 +11,8 @@ module TwitchEvents
         notification_data: {
           'category' => category,
           'title' => title,
-          'changed_fields' => changed_fields
+          'changed_fields' => changed_fields,
+          'stream_offline' => stream_offline?
         }
       )
     end
@@ -35,6 +36,11 @@ module TwitchEvents
       fields << 'category' if value_changed?(channel_info[:category], category)
       fields << 'title' if value_changed?(channel_info[:title], title)
       fields
+    end
+
+    def stream_offline?
+      channel_info[:status] == 'offline' &&
+        @twitch_event.secs_since_prev_status_event >= App.secrets.stream_restart_threshold_seconds.to_i
     end
 
     def value_changed?(old_value, new_value)

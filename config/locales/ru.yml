@@ -36,6 +36,7 @@ ru:
       %{old_name} изменил информацию о себе:
       Логин: %{login}
       Имя: %{name}
+    offline: Стрим оффлайн
     online: "%{streamer_name} онлайн"
     title: Название
   streamer_subscription:

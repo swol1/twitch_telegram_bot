@@ -36,6 +36,7 @@ en:
       %{old_name} has changed their information:
       Login: %{login}
       Name: %{name}
+    offline: Stream is offline
     online: "%{streamer_name} is online"
     title: Title
   streamer_subscription:
